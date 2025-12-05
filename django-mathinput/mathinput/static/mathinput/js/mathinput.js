@@ -2281,6 +2281,137 @@
     // Expose sync manager and related functions globally
     window.SyncManager = SyncManager;
     window.toggleVisualSourceMode = toggleVisualSourceMode;
+    
+    // Expose mobile features globally
+    window.initializeMobileFeatures = initializeMobileFeatures;
+    window.initializeCollapsiblePreview = initializeCollapsiblePreview;
+    window.initializeSwipeGestures = initializeSwipeGestures;
+
+    // ============================================================================
+    // Mobile Responsive Features
+    // ============================================================================
+
+    /**
+     * Initialize collapsible preview for mobile.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function initializeCollapsiblePreview(widget) {
+        const previewContainer = widget.querySelector('.mi-preview-container');
+        const previewToggle = widget.querySelector('.mi-preview-toggle');
+        
+        if (!previewContainer || !previewToggle) {
+            return;
+        }
+
+        // Check if we're on mobile
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        
+        if (!isMobile) {
+            // On desktop, always show preview
+            previewContainer.classList.remove('collapsed');
+            previewToggle.setAttribute('aria-expanded', 'true');
+            return;
+        }
+
+        // On mobile, make preview collapsible
+        previewToggle.addEventListener('click', function() {
+            const isExpanded = previewContainer.classList.contains('collapsed');
+            
+            if (isExpanded) {
+                previewContainer.classList.remove('collapsed');
+                previewToggle.setAttribute('aria-expanded', 'true');
+            } else {
+                previewContainer.classList.add('collapsed');
+                previewToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Listen for media query changes
+        const mediaQuery = window.matchMedia('(max-width: 768px)');
+        mediaQuery.addEventListener('change', function(e) {
+            if (!e.matches) {
+                // Desktop - always show
+                previewContainer.classList.remove('collapsed');
+                previewToggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+    }
+
+    /**
+     * Initialize swipe gestures for tab switching.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function initializeSwipeGestures(widget) {
+        const modeTabs = widget.querySelector('.mi-mode-tabs');
+        
+        if (!modeTabs) {
+            return;
+        }
+
+        // Check if we're on a touch device
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        if (!isTouchDevice) {
+            return;
+        }
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const swipeThreshold = 50; // Minimum distance for swipe
+        const swipeMaxVertical = 30; // Maximum vertical movement to consider horizontal swipe
+
+        modeTabs.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        modeTabs.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = Math.abs(touchEndY - touchStartY);
+            
+            // Only process horizontal swipes (vertical movement should be minimal)
+            if (deltaY > swipeMaxVertical) {
+                return;
+            }
+            
+            // Swipe right (next tab)
+            if (deltaX > swipeThreshold) {
+                const visualTab = widget.querySelector('.mi-tab-visual');
+                const sourceTab = widget.querySelector('.mi-tab-source');
+                
+                if (sourceTab && sourceTab.classList.contains('active')) {
+                    visualTab.click();
+                }
+            }
+            
+            // Swipe left (previous tab)
+            if (deltaX < -swipeThreshold) {
+                const visualTab = widget.querySelector('.mi-tab-visual');
+                const sourceTab = widget.querySelector('.mi-tab-source');
+                
+                if (visualTab && visualTab.classList.contains('active')) {
+                    sourceTab.click();
+                }
+            }
+        }, { passive: true });
+    }
+
+    /**
+     * Initialize mobile-specific features.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function initializeMobileFeatures(widget) {
+        initializeCollapsiblePreview(widget);
+        initializeSwipeGestures(widget);
+    }
 
     /**
      * Initialize a math input widget instance.
@@ -2345,6 +2476,9 @@
 
         // Initialize quick insert dropdown
         initializeQuickInsert(widget, config.preset || 'algebra');
+
+        // Initialize mobile features
+        initializeMobileFeatures(widget);
 
         // Setup event listeners
         setupEventListeners(widget);

@@ -83,8 +83,16 @@
     
     {# Live Preview Area #}
     <div class="mi-preview-container">
-        <div class="mi-preview-label">Preview:</div>
+        <button type="button" 
+                class="mi-preview-toggle" 
+                aria-label="Toggle preview"
+                aria-expanded="true"
+                aria-controls="{{ widget_id }}-preview">
+            <span class="mi-preview-label">Preview:</span>
+            <span class="mi-preview-toggle-icon">▼</span>
+        </button>
         <div class="mi-preview" 
+             id="{{ widget_id }}-preview"
              role="region"
              aria-live="polite"
              aria-label="Formula preview">
