@@ -674,6 +674,426 @@
     }
 
     // ============================================================================
+    // Cursor Position Management
+    // ============================================================================
+
+    /**
+     * Cursor Manager
+     * 
+     * Manages cursor position in the AST for insertion operations.
+     */
+    class CursorManager {
+        constructor(widget) {
+            this.widget = widget;
+            this.currentPlaceholder = null;
+            this.currentNode = null;
+        }
+
+        /**
+         * Get current cursor position (active placeholder or root).
+         */
+        getCursorPosition() {
+            const visualBuilder = this.widget.visualBuilder;
+            if (!visualBuilder) {
+                return { node: visualBuilder ? visualBuilder.ast : null, placeholder: null };
+            }
+
+            const placeholderManager = visualBuilder.placeholderManager;
+            const activePlaceholder = placeholderManager.activePlaceholder;
+            
+            if (activePlaceholder) {
+                return {
+                    node: activePlaceholder.node,
+                    placeholder: activePlaceholder,
+                    isPlaceholder: true
+                };
+            }
+
+            // If no active placeholder, find first placeholder or use root
+            const placeholders = placeholderManager.placeholders;
+            if (placeholders.length > 0) {
+                return {
+                    node: placeholders[0].node,
+                    placeholder: placeholders[0],
+                    isPlaceholder: true
+                };
+            }
+
+            // Default to root AST
+            return {
+                node: visualBuilder.ast,
+                placeholder: null,
+                isPlaceholder: false
+            };
+        }
+
+        /**
+         * Set cursor to a specific placeholder.
+         */
+        setCursor(placeholder) {
+            if (placeholder && this.widget.visualBuilder) {
+                this.widget.visualBuilder.placeholderManager.activatePlaceholder(placeholder);
+            }
+        }
+    }
+
+    // ============================================================================
+    // Template Parsing and Node Creation
+    // ============================================================================
+
+    /**
+     * Create AST node from LaTeX template.
+     * 
+     * @param {string} template - LaTeX template (e.g., "\\frac{}{}", "x^{2}")
+     * @returns {ASTNode} Created AST node
+     */
+    function createNodeFromTemplate(template) {
+        if (!template) {
+            return createPlaceholder();
+        }
+
+        // Parse template into AST
+        const ast = parseLatex(template);
+        
+        // If parsing resulted in placeholder, return it
+        if (ast.type === NodeTypes.PLACEHOLDER && !ast.value) {
+            return ast;
+        }
+
+        return ast;
+    }
+
+    /**
+     * Insert node into AST at cursor position.
+     * 
+     * @param {Object} cursor - Cursor position from CursorManager
+     * @param {ASTNode} newNode - Node to insert
+     */
+    function insertNode(cursor, newNode) {
+        if (!cursor || !cursor.node) {
+            return;
+        }
+
+        const targetNode = cursor.node;
+
+        // If cursor is in a placeholder, replace the placeholder
+        if (cursor.isPlaceholder && targetNode.type === NodeTypes.PLACEHOLDER) {
+            // Replace placeholder with new node
+            if (targetNode.parent) {
+                const parent = targetNode.parent;
+                const index = parent.children.indexOf(targetNode);
+                if (index > -1) {
+                    parent.children[index] = newNode;
+                    newNode.parent = parent;
+                } else {
+                    parent.addChild(newNode);
+                }
+            } else {
+                // Root node - replace it
+                cursor.node = newNode;
+            }
+        } else {
+            // Insert as child or sibling based on context
+            if (targetNode.type === NodeTypes.EXPRESSION) {
+                // Add to expression
+                targetNode.addChild(newNode);
+            } else if (targetNode.parent) {
+                // Insert as sibling
+                const parent = targetNode.parent;
+                const index = parent.children.indexOf(targetNode);
+                if (index > -1) {
+                    parent.children.splice(index + 1, 0, newNode);
+                    newNode.parent = parent;
+                } else {
+                    parent.addChild(newNode);
+                }
+            } else {
+                // Root - wrap in expression
+                const expression = new ASTNode(NodeTypes.EXPRESSION, '+', [targetNode, newNode]);
+                cursor.node = expression;
+            }
+        }
+    }
+
+    // ============================================================================
+    // Preview Rendering with KaTeX
+    // ============================================================================
+
+    /**
+     * Render preview with KaTeX.
+     * 
+     * @param {string} latex - LaTeX string to render
+     * @param {HTMLElement} container - Container element for preview
+     */
+    function renderPreview(latex, container) {
+        if (!container) {
+            return;
+        }
+
+        // Clear previous content
+        container.innerHTML = '';
+
+        if (!latex || latex.trim() === '') {
+            container.innerHTML = '<span class="mi-preview-empty">Preview will appear here</span>';
+            return;
+        }
+
+        // Check if KaTeX is available
+        if (typeof katex === 'undefined') {
+            // Fallback: show LaTeX code
+            container.innerHTML = '<code class="mi-preview-fallback">' + escapeHtml(latex) + '</code>';
+            container.innerHTML += '<div class="mi-preview-warning">KaTeX not loaded. Install KaTeX for preview rendering.</div>';
+            return;
+        }
+
+        try {
+            // Render with KaTeX
+            katex.render(latex, container, {
+                throwOnError: true,
+                errorColor: '#cc0000',
+                displayMode: false,
+                strict: false
+            });
+            
+            // Remove any error classes
+            container.classList.remove('mi-preview-error');
+        } catch (error) {
+            // Show error
+            container.innerHTML = '<div class="mi-preview-error">' + escapeHtml(error.message) + '</div>';
+            container.innerHTML += '<code class="mi-preview-latex">' + escapeHtml(latex) + '</code>';
+            container.classList.add('mi-preview-error');
+            console.error('KaTeX render error:', error, 'for LaTeX:', latex);
+        }
+    }
+
+    /**
+     * Show render error message.
+     */
+    function showRenderError(container, message) {
+        if (!container) return;
+        
+        container.innerHTML = '<div class="mi-preview-error">' + escapeHtml(message) + '</div>';
+        container.classList.add('mi-preview-error');
+    }
+
+    // ============================================================================
+    // Hidden Field Synchronization
+    // ============================================================================
+
+    /**
+     * Update hidden field with LaTeX value.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} latex - LaTeX string
+     */
+    function updateHiddenField(widget, latex) {
+        if (!widget) return;
+
+        const hiddenInput = widget.querySelector('.mi-hidden-input');
+        if (hiddenInput) {
+            hiddenInput.value = latex || '';
+        }
+    }
+
+    /**
+     * Sync source mode textarea with LaTeX.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} latex - LaTeX string
+     */
+    function syncSourceMode(widget, latex) {
+        if (!widget) return;
+
+        const sourceTextarea = widget.querySelector('.mi-source-textarea');
+        if (sourceTextarea) {
+            sourceTextarea.value = latex || '';
+        }
+    }
+
+    // ============================================================================
+    // Debouncing Utility
+    // ============================================================================
+
+    /**
+     * Debounce function to limit how often a function is called.
+     * 
+     * @param {Function} func - Function to debounce
+     * @param {number} wait - Wait time in milliseconds
+     * @returns {Function} Debounced function
+     */
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // ============================================================================
+    // Button Click Handlers
+    // ============================================================================
+
+    /**
+     * Handle toolbar button click.
+     * 
+     * @param {HTMLElement} buttonElement - Clicked button element
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function handleButtonClick(buttonElement, widget) {
+        if (!buttonElement || !widget) {
+            return;
+        }
+
+        const action = buttonElement.dataset.action;
+        const template = buttonElement.dataset.template;
+
+        if (!action || action !== 'insert') {
+            return;
+        }
+
+        if (!template) {
+            console.warn('Button has no template:', buttonElement);
+            return;
+        }
+
+        // Get visual builder
+        const visualBuilder = widget.visualBuilder;
+        if (!visualBuilder) {
+            console.warn('Visual builder not initialized');
+            return;
+        }
+
+        // Get cursor position
+        const cursorManager = widget.cursorManager || new CursorManager(widget);
+        widget.cursorManager = cursorManager;
+        const cursor = cursorManager.getCursorPosition();
+
+        // Create node from template
+        const newNode = createNodeFromTemplate(template);
+
+        // Insert node at cursor
+        insertNode(cursor, newNode);
+
+        // Update AST in visual builder
+        if (cursor.node && cursor.node !== visualBuilder.ast) {
+            // If cursor was in a specific node, update that node's parent's AST
+            // For now, we'll update the entire AST
+            visualBuilder.setAST(visualBuilder.ast);
+        } else {
+            visualBuilder.setAST(cursor.node || visualBuilder.ast);
+        }
+
+        // Get updated LaTeX
+        const latex = visualBuilder.getLatex();
+
+        // Update hidden field
+        updateHiddenField(widget, latex);
+
+        // Sync source mode
+        syncSourceMode(widget, latex);
+
+        // Render preview (debounced)
+        const previewContainer = widget.querySelector('.mi-preview');
+        if (previewContainer) {
+            debouncedRenderPreview(latex, previewContainer);
+        }
+
+        // Move cursor to first placeholder in new node
+        const placeholders = newNode.getPlaceholders();
+        if (placeholders.length > 0 && visualBuilder.placeholderManager) {
+            const firstPlaceholder = visualBuilder.placeholderManager.placeholders.find(
+                p => p.node.id === placeholders[0].id
+            );
+            if (firstPlaceholder) {
+                cursorManager.setCursor(firstPlaceholder);
+            }
+        }
+    }
+
+    /**
+     * Debounced preview renderer (300ms delay).
+     */
+    const debouncedRenderPreview = debounce(renderPreview, 300);
+
+    // ============================================================================
+    // Event Listeners Setup
+    // ============================================================================
+
+    /**
+     * Setup event listeners for a widget.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function setupEventListeners(widget) {
+        if (!widget) return;
+
+        // Setup toolbar button click handlers
+        const toolbarButtons = widget.querySelectorAll('.mi-button[data-action="insert"]');
+        toolbarButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                handleButtonClick(this, widget);
+            });
+        });
+
+        // Setup placeholder keyboard navigation
+        const visualBuilder = widget.visualBuilder;
+        if (visualBuilder) {
+            const placeholderManager = visualBuilder.placeholderManager;
+            
+            // Tab navigation between placeholders
+            widget.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    const next = placeholderManager.getNext();
+                    if (next) {
+                        e.preventDefault();
+                        placeholderManager.activatePlaceholder(next);
+                    }
+                } else if (e.key === 'Tab' && e.shiftKey) {
+                    const prev = placeholderManager.getPrevious();
+                    if (prev) {
+                        e.preventDefault();
+                        placeholderManager.activatePlaceholder(prev);
+                    }
+                }
+            });
+        }
+
+        // Setup source mode sync (when typing in source mode)
+        const sourceTextarea = widget.querySelector('.mi-source-textarea');
+        if (sourceTextarea) {
+            const debouncedSyncFromSource = debounce(function() {
+                const latex = sourceTextarea.value;
+                const visualBuilder = widget.visualBuilder;
+                
+                if (visualBuilder) {
+                    try {
+                        const ast = parseLatex(latex);
+                        visualBuilder.setAST(ast);
+                        
+                        // Update hidden field
+                        updateHiddenField(widget, latex);
+                        
+                        // Update preview
+                        const previewContainer = widget.querySelector('.mi-preview');
+                        if (previewContainer) {
+                            debouncedRenderPreview(latex, previewContainer);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing LaTeX from source mode:', error);
+                    }
+                }
+            }, 500);
+
+            sourceTextarea.addEventListener('input', debouncedSyncFromSource);
+        }
+    }
+
+    // ============================================================================
     // Expose AST functions globally
     // ============================================================================
     window.NodeTypes = NodeTypes;
@@ -684,6 +1104,9 @@
     window.PlaceholderManager = PlaceholderManager;
     window.createEmptyAST = createEmptyAST;
     window.createPlaceholder = createPlaceholder;
+    window.CursorManager = CursorManager;
+    window.handleButtonClick = handleButtonClick;
+    window.renderPreview = renderPreview;
 
     /**
      * Initialize a math input widget instance.
@@ -727,6 +1150,10 @@
             const visualBuilder = new VisualBuilder(visualBuilderContainer, initialAST);
             widget.visualBuilder = visualBuilder;
             
+            // Create and store CursorManager
+            const cursorManager = new CursorManager(widget);
+            widget.cursorManager = cursorManager;
+            
             // Render the AST
             visualBuilder.render();
         }
@@ -734,8 +1161,16 @@
         // Initialize source mode sync
         initializeSourceMode(widget, config.value || '');
 
-        // Initialize preview (placeholder - will use KaTeX in Phase 2)
-        initializePreview(widget, config.value || '');
+        // Initialize preview with KaTeX
+        const previewContainer = widget.querySelector('.mi-preview');
+        if (previewContainer && config.value) {
+            renderPreview(config.value, previewContainer);
+        } else if (previewContainer) {
+            previewContainer.innerHTML = '<span class="mi-preview-empty">Preview will appear here</span>';
+        }
+
+        // Setup event listeners
+        setupEventListeners(widget);
 
         console.log('MathInput widget initialized:', widgetId, config);
     }
@@ -792,18 +1227,6 @@
         }
     }
 
-    /**
-     * Initialize preview area.
-     * Placeholder - will use KaTeX in Phase 2.
-     */
-    function initializePreview(widget, initialValue) {
-        const preview = widget.querySelector('.mi-preview');
-        if (preview && initialValue) {
-            // Placeholder: just show the LaTeX code
-            // In Phase 2, this will render with KaTeX
-            preview.innerHTML = '<code>' + escapeHtml(initialValue) + '</code>';
-        }
-    }
 
     /**
      * Escape HTML to prevent XSS.
