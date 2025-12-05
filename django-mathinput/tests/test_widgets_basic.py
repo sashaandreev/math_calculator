@@ -67,3 +67,22 @@ def test_widget_media():
     assert 'mathinput/css/mathinput.css' in widget.Media.css['all']
     assert 'mathinput/js/mathinput.js' in widget.Media.js
 
+
+@pytest.mark.unit
+def test_widget_renders_basic_html():
+    """
+    What we are testing: Widget render method produces HTML output
+    Why we are testing: Widget must render to be usable in forms
+    Expected Result: HTML string returned with widget structure
+    """
+    widget = MathInputWidget()
+    html = widget.render('equation', None, {'id': 'id_equation'})
+    
+    # Check that HTML is returned
+    assert isinstance(html, str)
+    assert len(html) > 0
+    
+    # Check for key widget structure elements
+    assert 'mi-widget' in html or 'id_equation' in html
+    assert 'equation' in html  # Field name should be in HTML
+

@@ -63,6 +63,33 @@ This package is currently in active development. See the implementation plan in 
 
 MIT License
 
+## Running Tests
+
+Tests should be run from the `django-mathinput` directory:
+
+```bash
+cd django-mathinput
+python -m pytest tests/ -v
+```
+
+Or run specific test categories:
+
+```bash
+# Unit tests only
+python -m pytest tests/ -m unit -v
+
+# Security tests only
+python -m pytest tests/ -m security -v
+
+# Integration tests only
+python -m pytest tests/ -m integration -v
+
+# User story tests only
+python -m pytest tests/ -m user_story -v
+```
+
+**Note:** Running tests from the root directory may cause pytest marker warnings. Always run tests from the `django-mathinput` directory.
+
 ## Contributing
 
 Contributions are welcome! Please see the documentation for development guidelines.
