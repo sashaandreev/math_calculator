@@ -1107,6 +1107,400 @@
     window.CursorManager = CursorManager;
     window.handleButtonClick = handleButtonClick;
     window.renderPreview = renderPreview;
+    window.QuickInsertManager = QuickInsertManager;
+    window.initializeQuickInsert = initializeQuickInsert;
+
+    /**
+     * Quick Insert Manager
+     * 
+     * Manages the quick insert dropdown menu and template insertion.
+     */
+    class QuickInsertManager {
+        constructor(widget, presetConfig) {
+            this.widget = widget;
+            this.presetConfig = presetConfig;
+            this.toggleButton = widget.querySelector('.mi-quick-insert-toggle');
+            this.menu = widget.querySelector('.mi-quick-insert-menu');
+            this.isOpen = false;
+            this.selectedIndex = -1;
+            
+            this.initialize();
+        }
+
+        /**
+         * Initialize quick insert dropdown.
+         */
+        initialize() {
+            if (!this.toggleButton || !this.menu) {
+                return;
+            }
+
+            // Update button label with preset name
+            const presetName = this.presetConfig.name || 'Quick';
+            const label = this.toggleButton.querySelector('.mi-quick-insert-label');
+            if (label) {
+                label.textContent = presetName + ' Quick';
+            }
+
+            // Populate menu with templates from preset
+            this.populateMenu();
+
+            // Setup event listeners
+            this.setupEventListeners();
+        }
+
+        /**
+         * Populate menu with templates from preset configuration.
+         */
+        populateMenu() {
+            if (!this.menu || !this.presetConfig.quick_inserts) {
+                return;
+            }
+
+            // Clear existing items
+            this.menu.innerHTML = '';
+
+            // Add menu items from preset
+            this.presetConfig.quick_inserts.forEach((item, index) => {
+                const [name, template] = Array.isArray(item) ? item : [item, item];
+                const li = document.createElement('li');
+                li.setAttribute('role', 'menuitem');
+                
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'mi-quick-insert-item';
+                button.setAttribute('data-template', template);
+                button.setAttribute('data-index', index);
+                button.textContent = name;
+                
+                // Add click handler
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleItemClick(template);
+                });
+
+                li.appendChild(button);
+                this.menu.appendChild(li);
+            });
+        }
+
+        /**
+         * Setup event listeners for dropdown.
+         */
+        setupEventListeners() {
+            if (!this.toggleButton) {
+                return;
+            }
+
+            // Toggle button click
+            this.toggleButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggle();
+            });
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (this.isOpen && !this.widget.contains(e.target)) {
+                    this.close();
+                }
+            });
+
+            // Keyboard navigation
+            this.menu.addEventListener('keydown', (e) => {
+                this.handleKeyboardNavigation(e);
+            });
+
+            // Focus management
+            this.toggleButton.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.toggle();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.open();
+                    this.focusFirstItem();
+                }
+            });
+        }
+
+        /**
+         * Toggle dropdown open/closed.
+         */
+        toggle() {
+            if (this.isOpen) {
+                this.close();
+            } else {
+                this.open();
+            }
+        }
+
+        /**
+         * Open dropdown menu.
+         */
+        open() {
+            if (!this.menu || !this.toggleButton) {
+                return;
+            }
+
+            this.menu.hidden = false;
+            this.toggleButton.setAttribute('aria-expanded', 'true');
+            this.isOpen = true;
+            this.selectedIndex = -1;
+
+            // Focus first item if menu has items
+            const firstItem = this.menu.querySelector('.mi-quick-insert-item');
+            if (firstItem) {
+                setTimeout(() => firstItem.focus(), 0);
+            }
+        }
+
+        /**
+         * Close dropdown menu.
+         */
+        close() {
+            if (!this.menu || !this.toggleButton) {
+                return;
+            }
+
+            this.menu.hidden = true;
+            this.toggleButton.setAttribute('aria-expanded', 'false');
+            this.isOpen = false;
+            this.selectedIndex = -1;
+
+            // Return focus to toggle button
+            this.toggleButton.focus();
+        }
+
+        /**
+         * Handle keyboard navigation in menu.
+         */
+        handleKeyboardNavigation(e) {
+            const items = Array.from(this.menu.querySelectorAll('.mi-quick-insert-item'));
+            if (items.length === 0) {
+                return;
+            }
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.selectedIndex = (this.selectedIndex + 1) % items.length;
+                    items[this.selectedIndex].focus();
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.selectedIndex = this.selectedIndex <= 0 
+                        ? items.length - 1 
+                        : this.selectedIndex - 1;
+                    items[this.selectedIndex].focus();
+                    break;
+
+                case 'Home':
+                    e.preventDefault();
+                    this.selectedIndex = 0;
+                    items[0].focus();
+                    break;
+
+                case 'End':
+                    e.preventDefault();
+                    this.selectedIndex = items.length - 1;
+                    items[this.selectedIndex].focus();
+                    break;
+
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    if (this.selectedIndex >= 0 && this.selectedIndex < items.length) {
+                        const template = items[this.selectedIndex].dataset.template;
+                        this.handleItemClick(template);
+                    }
+                    break;
+
+                case 'Escape':
+                    e.preventDefault();
+                    this.close();
+                    break;
+
+                default:
+                    // Allow typing to search (optional enhancement)
+                    break;
+            }
+        }
+
+        /**
+         * Focus first menu item.
+         */
+        focusFirstItem() {
+            const firstItem = this.menu.querySelector('.mi-quick-insert-item');
+            if (firstItem) {
+                firstItem.focus();
+                this.selectedIndex = 0;
+            }
+        }
+
+        /**
+         * Handle menu item click.
+         */
+        handleItemClick(template) {
+            if (!template) {
+                return;
+            }
+
+            // Insert template into visual builder
+            this.insertTemplate(template);
+
+            // Close menu
+            this.close();
+        }
+
+        /**
+         * Insert template into visual builder.
+         */
+        insertTemplate(template) {
+            const visualBuilder = this.widget.visualBuilder;
+            const cursorManager = this.widget.cursorManager;
+
+            if (!visualBuilder || !cursorManager) {
+                console.warn('Visual builder or cursor manager not available');
+                return;
+            }
+
+            // Get current cursor position
+            const cursor = cursorManager.getCurrentCursor();
+
+            // Create node from template
+            const newNode = createNodeFromTemplate(template);
+
+            if (!newNode) {
+                console.warn('Failed to create node from template:', template);
+                return;
+            }
+
+            // Insert node at cursor
+            insertNode(cursor, newNode);
+
+            // Update visual builder
+            visualBuilder.render();
+
+            // Update preview
+            const latex = astToLatex(visualBuilder.ast);
+            const previewContainer = this.widget.querySelector('.mi-preview');
+            if (previewContainer) {
+                renderPreview(latex, previewContainer);
+            }
+
+            // Update hidden field
+            const hiddenInput = this.widget.querySelector('.mi-hidden-input');
+            if (hiddenInput) {
+                hiddenInput.value = latex;
+            }
+
+            // Focus visual builder
+            const visualBuilderContainer = this.widget.querySelector('.mi-visual-builder');
+            if (visualBuilderContainer) {
+                visualBuilderContainer.focus();
+            }
+        }
+    }
+
+    /**
+     * Preset configurations (quick_inserts data).
+     * This should ideally be loaded from Django, but for now we provide a mapping.
+     */
+    const PRESET_CONFIGS = {
+        'algebra': {
+            name: 'Algebra',
+            quick_inserts: [
+                ['Quadratic Equation', 'ax^2 + bx + c = 0'],
+                ['Polynomial', 'p(x) = a_n x^n + a_{n-1} x^{n-1} + \\cdots + a_0'],
+                ['Square', 'x^2'],
+                ['Square Root', '\\sqrt{x}'],
+                ['Fraction', '\\frac{a}{b}'],
+                ['Absolute Value', '|x|'],
+                ['Factorial', 'n!'],
+            ]
+        },
+        'calculus': {
+            name: 'Calculus',
+            quick_inserts: [
+                ['Indefinite Integral', '\\int f(x) \\, dx'],
+                ['Definite Integral', '\\int_{a}^{b} f(x) \\, dx'],
+                ['Derivative', '\\frac{d}{dx}'],
+                ['Partial Derivative', '\\frac{\\partial}{\\partial x}'],
+                ['Limit', '\\lim_{x \\to a} f(x)'],
+                ['Second Derivative', '\\frac{d^2}{dx^2}'],
+                ['Chain Rule', '\\frac{d}{dx}[f(g(x))] = f\'(g(x)) \\cdot g\'(x)'],
+                ['Fundamental Theorem', '\\int_{a}^{b} f\'(x) \\, dx = f(b) - f(a)'],
+            ]
+        },
+        'physics': {
+            name: 'Physics',
+            quick_inserts: [
+                ['Newton\'s Second Law', 'F = ma'],
+                ['Kinetic Energy', 'E_k = \\frac{1}{2}mv^2'],
+                ['Potential Energy', 'E_p = mgh'],
+                ['Wave Equation', 'y(x,t) = A\\sin(kx - \\omega t)'],
+                ['Schrödinger Equation', 'i\\hbar\\frac{\\partial}{\\partial t}\\psi = \\hat{H}\\psi'],
+            ]
+        },
+        'machine_learning': {
+            name: 'Machine Learning',
+            quick_inserts: [
+                ['Linear Regression', 'y = \\mathbf{w}^T \\mathbf{x} + b'],
+                ['Sigmoid', '\\sigma(x) = \\frac{1}{1 + e^{-x}}'],
+                ['Cross Entropy', 'H(p,q) = -\\sum_i p(i)\\log q(i)'],
+                ['Gradient', '\\nabla f = \\left(\\frac{\\partial f}{\\partial x_1}, \\ldots, \\frac{\\partial f}{\\partial x_n}\\right)'],
+            ]
+        },
+        'statistics': {
+            name: 'Statistics',
+            quick_inserts: [
+                ['Mean', '\\bar{x} = \\frac{1}{n}\\sum_{i=1}^{n} x_i'],
+                ['Variance', '\\sigma^2 = \\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\bar{x})^2'],
+                ['Standard Deviation', '\\sigma = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(x_i - \\bar{x})^2}'],
+                ['Normal Distribution', 'f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}'],
+            ]
+        },
+        'probability': {
+            name: 'Probability',
+            quick_inserts: [
+                ['Probability', 'P(A)'],
+                ['Conditional Probability', 'P(A|B) = \\frac{P(A \\cap B)}{P(B)}'],
+                ['Bayes\' Theorem', 'P(A|B) = \\frac{P(B|A)P(A)}{P(B)}'],
+                ['Expected Value', 'E[X] = \\sum_{i} x_i P(x_i)'],
+            ]
+        }
+    };
+
+    /**
+     * Get preset configuration by code.
+     * 
+     * @param {string} presetCode - Preset code (e.g., 'algebra', 'calculus')
+     * @returns {Object} Preset configuration object
+     */
+    function getPresetConfig(presetCode) {
+        return PRESET_CONFIGS[presetCode] || PRESET_CONFIGS['algebra'];
+    }
+
+    /**
+     * Initialize quick insert dropdown.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} presetCode - Preset code
+     */
+    function initializeQuickInsert(widget, presetCode) {
+        const quickInsertContainer = widget.querySelector('.mi-quick-insert');
+        if (!quickInsertContainer) {
+            return;
+        }
+
+        // Get preset configuration
+        const presetConfig = getPresetConfig(presetCode);
+
+        // Create and store QuickInsertManager instance
+        const quickInsertManager = new QuickInsertManager(widget, presetConfig);
+        widget.quickInsertManager = quickInsertManager;
+    }
 
     /**
      * Initialize a math input widget instance.
@@ -1168,6 +1562,9 @@
         } else if (previewContainer) {
             previewContainer.innerHTML = '<span class="mi-preview-empty">Preview will appear here</span>';
         }
+
+        // Initialize quick insert dropdown
+        initializeQuickInsert(widget, config.preset || 'algebra');
 
         // Setup event listeners
         setupEventListeners(widget);

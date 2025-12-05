@@ -25,16 +25,8 @@
         </button>
     </div>
     
-    {# Quick Insert Dropdown (placeholder - will be implemented in Phase 3) #}
-    <div class="mi-quick-insert-container" style="display: none;">
-        <button type="button" 
-                class="mi-quick-insert-toggle"
-                aria-label="Quick insert templates"
-                aria-haspopup="true"
-                aria-expanded="false">
-            Quick Insert ▼
-        </button>
-    </div>
+    {# Quick Insert Dropdown #}
+    {% include "mathinput/quick_insert.html" with widget_id=widget_id %}
     
     {# Toolbar area (placeholder - will be populated in Phase 2) #}
     <div class="mi-toolbar-container" role="toolbar" aria-label="Math operations toolbar">

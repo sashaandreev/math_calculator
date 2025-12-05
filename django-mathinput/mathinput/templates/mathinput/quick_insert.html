@@ -1,0 +1,19 @@
+{# Quick Insert Dropdown Component #}
+<div class="mi-quick-insert">
+    <button type="button" 
+            class="mi-quick-insert-toggle"
+            aria-label="Quick insert templates"
+            aria-haspopup="true"
+            aria-expanded="false"
+            id="{{ widget_id }}-quick-insert-toggle">
+        <span class="mi-quick-insert-label">Quick Insert</span>
+        <span class="mi-quick-insert-arrow">▼</span>
+    </button>
+    <ul class="mi-quick-insert-menu" 
+        role="menu" 
+        aria-labelledby="{{ widget_id }}-quick-insert-toggle"
+        hidden>
+        {# Menu items will be populated by JavaScript from preset configuration #}
+    </ul>
+</div>
+
