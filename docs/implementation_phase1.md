@@ -5,7 +5,7 @@ Phase 1 establishes the project foundation: project structure, basic widget, and
 
 ## Tasks
 
-### Task 1: Project Init + Setup.py + Folder Structure
+### ✅Task 1: Project Init + Setup.py + Folder Structure
 **Owner:** Lead Dev  
 **Duration:** 1 day  
 **Dependencies:** None
