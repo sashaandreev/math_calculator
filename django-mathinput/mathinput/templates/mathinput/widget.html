@@ -1,0 +1,110 @@
+{% load static %}
+<div class="mi-widget" id="{{ widget_id }}" data-mode="{{ mode }}" data-preset="{{ preset }}">
+    {# Hidden textarea for form submission #}
+    <textarea name="{{ name }}" id="id_{{ name }}" class="mi-hidden-input" style="display: none;">{{ value|default:'' }}</textarea>
+    
+    {# Mode tabs: Visual and Source #}
+    <div class="mi-mode-tabs" role="tablist" aria-label="Input mode">
+        <button type="button" 
+                class="mi-tab mi-tab-visual active" 
+                data-mode="visual"
+                role="tab"
+                aria-selected="true"
+                aria-controls="{{ widget_id }}-visual"
+                aria-label="Visual mode">
+            Visual
+        </button>
+        <button type="button" 
+                class="mi-tab mi-tab-source" 
+                data-mode="source"
+                role="tab"
+                aria-selected="false"
+                aria-controls="{{ widget_id }}-source"
+                aria-label="Source mode">
+            Source
+        </button>
+    </div>
+    
+    {# Quick Insert Dropdown (placeholder - will be implemented in Phase 3) #}
+    <div class="mi-quick-insert-container" style="display: none;">
+        <button type="button" 
+                class="mi-quick-insert-toggle"
+                aria-label="Quick insert templates"
+                aria-haspopup="true"
+                aria-expanded="false">
+            Quick Insert ▼
+        </button>
+    </div>
+    
+    {# Toolbar area (placeholder - will be populated in Phase 2) #}
+    <div class="mi-toolbar-container" role="toolbar" aria-label="Math operations toolbar">
+        <div class="mi-toolbar-tabs" role="tablist" aria-label="Toolbar tabs">
+            {# Toolbar tabs will be dynamically loaded based on mode #}
+        </div>
+        <div class="mi-toolbar-content">
+            {# Toolbar buttons will be dynamically loaded #}
+        </div>
+    </div>
+    
+    {# Visual Builder Area #}
+    <div class="mi-visual-builder-container" 
+         id="{{ widget_id }}-visual"
+         role="tabpanel"
+         aria-labelledby="{{ widget_id }}-visual-tab"
+         data-mode="visual">
+        <div class="mi-visual-builder" 
+             role="textbox"
+             aria-label="Formula builder"
+             aria-multiline="true"
+             contenteditable="false">
+            {# Visual builder content will be rendered here by JavaScript #}
+            <span class="mi-placeholder">Click buttons above to build your formula...</span>
+        </div>
+    </div>
+    
+    {# Source Mode Area (hidden by default) #}
+    <div class="mi-source-container" 
+         id="{{ widget_id }}-source"
+         role="tabpanel"
+         aria-labelledby="{{ widget_id }}-source-tab"
+         data-mode="source"
+         style="display: none;">
+        <textarea class="mi-source-textarea"
+                  aria-label="LaTeX source code"
+                  placeholder="Enter LaTeX code here..."></textarea>
+    </div>
+    
+    {# Live Preview Area #}
+    <div class="mi-preview-container">
+        <div class="mi-preview-label">Preview:</div>
+        <div class="mi-preview" 
+             role="region"
+             aria-live="polite"
+             aria-label="Formula preview">
+            {# Preview will be rendered here by KaTeX/MathJax #}
+            <span class="mi-preview-placeholder">Preview will appear here...</span>
+        </div>
+        <div class="mi-preview-error" style="display: none;" role="alert">
+            {# Error messages will be shown here #}
+        </div>
+    </div>
+    
+    {# Error container #}
+    <div class="mi-error-container" role="alert" style="display: none;">
+        {# Validation errors will be shown here #}
+    </div>
+</div>
+
+{# Initialize widget JavaScript #}
+<script>
+    // Widget initialization will be handled by mathinput.js
+    // This will be implemented in Phase 2
+    if (typeof initializeMathInput !== 'undefined') {
+        initializeMathInput('{{ widget_id }}', {
+            mode: '{{ mode }}',
+            preset: '{{ preset }}',
+            value: {{ value|default:"''"|safe }},
+        });
+    }
+</script>
+

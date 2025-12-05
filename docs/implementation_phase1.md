@@ -43,7 +43,7 @@ Phase 1 establishes the project foundation: project structure, basic widget, and
 
 ---
 
-### Task 2: MathInputWidget + Basic Widget.html
+### ✅Task 2: MathInputWidget + Basic Widget.html
 **Owner:** Lead Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 1
