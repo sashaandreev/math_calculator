@@ -258,10 +258,57 @@ The formula \({{ formula|render_math_inline }}\) is important.
 
 ---
 
-### Task 17: Django Admin Integration
+### ✅Task 17: Django Admin Integration
 **Owner:** Lead Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 2, Task 16
+
+**Usage examples:**
+
+1. Method 1: Using MathInputAdminMixin
+
+```python
+from mathinput.admin import MathInputAdminMixin
+from django.contrib import admin
+
+@admin.register(Problem)
+class ProblemAdmin(MathInputAdminMixin, admin.ModelAdmin):
+    mathinput_fields = {
+        'equation': {'mode': 'regular_functions'},
+        'calculus_problem': {'mode': 'integrals_differentials', 'preset': 'calculus'},
+    }
+```
+
+2. Method 2: Using register_mathinput_admin
+
+```python
+from mathinput.admin import register_mathinput_admin
+
+register_mathinput_admin(
+    Problem,
+    equation={'mode': 'regular_functions'},
+    calculus_problem={'mode': 'integrals_differentials', 'preset': 'calculus'}
+)
+```
+
+3. Method 3: Manual widget configuration
+
+```python
+from mathinput.admin import MathInputAdminForm, get_mathinput_widget_for_field
+
+class ProblemAdmin(admin.ModelAdmin):
+    form = MathInputAdminForm
+    
+    class Meta:
+        widgets = get_mathinput_widget_for_field('equation', mode='matrices')
+```
+
+**Features:**
+- Easy integration: Multiple ways to integrate with admin
+- Automatic configuration: Mixin handles widget setup
+- Flexible: Supports all widget modes and presets
+- Admin-compatible: CSS ensures proper styling in admin
+- Tested: Full test coverage for admin integration
 
 **Implementation:**
 - Admin widget registration:

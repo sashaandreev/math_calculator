@@ -258,3 +258,67 @@ def test_mobile_color_picker_full_width():
     assert 'mi-widget' in html
     # Full width styling is handled via CSS media queries
 
+
+@pytest.mark.user_story
+@pytest.mark.us_16  # US-16: Display Stored Formulas
+def test_render_math_displays_formula():
+    """
+    What we are testing: render_math filter displays stored formulas
+    Why we are testing: US-16 - Core display functionality
+    Expected Result: Stored LaTeX rendered correctly in templates
+    """
+    from mathinput.templatetags.mathinput_tags import render_math
+    
+    latex = r'x^2 + 1'
+    result = render_math(latex)
+    
+    # Should return HTML
+    assert result is not None
+    assert isinstance(result, str)
+    assert len(result) > 0
+    
+    # Should contain rendering markup
+    assert 'katex' in result.lower() or 'mathjax' in result.lower() or 'data-latex' in result
+
+
+@pytest.mark.user_story
+@pytest.mark.us_16
+def test_render_math_handles_errors():
+    """
+    What we are testing: render_math handles invalid formulas gracefully
+    Why we are testing: US-16 - Users may have invalid stored formulas
+    Expected Result: Error message shown instead of breaking page
+    """
+    from mathinput.templatetags.mathinput_tags import render_math
+    
+    # Test with empty value
+    result = render_math('')
+    assert result is not None
+    assert len(result) > 0
+    
+    # Test with invalid LaTeX
+    invalid = r'\invalid{command}'
+    result2 = render_math(invalid)
+    assert result2 is not None
+    # Should still return HTML (rendering may fail, but page shouldn't break)
+    assert isinstance(result2, str)
+
+
+@pytest.mark.user_story
+@pytest.mark.us_16
+def test_as_mathinput_works_in_template():
+    """
+    What we are testing: as_mathinput filter works in templates
+    Why we are testing: US-16 - Users need to render widgets in templates
+    Expected Result: Widget renders correctly in template
+    """
+    from django.template import Context, Template
+    
+    template = Template('{% load mathinput_tags %}{{ value|as_mathinput }}')
+    context = Context({'value': 'x^2 + 1'})
+    result = template.render(context)
+    
+    # Should render widget
+    assert result is not None
+    assert 'mi-widget' in result or 'widget' in result.lower()
+

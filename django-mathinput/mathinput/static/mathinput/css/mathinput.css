@@ -822,3 +822,41 @@
     }
 }
 
+/* ============================================================================
+ * Django Admin Compatibility
+ * ============================================================================ */
+
+/* Ensure widget works in Django Admin */
+.django-admin .mi-widget,
+.admin .mi-widget {
+    margin: 10px 0;
+}
+
+.django-admin .mi-toolbar-container,
+.admin .mi-toolbar-container {
+    background: #f8f9fa;
+}
+
+.django-admin .mi-visual-builder-container,
+.admin .mi-visual-builder-container {
+    background: #fff;
+}
+
+/* Admin form field styling */
+.field-mi-widget .mi-widget,
+.form-row .mi-widget {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Admin list view preview */
+.mi-admin-preview {
+    display: inline-block;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
