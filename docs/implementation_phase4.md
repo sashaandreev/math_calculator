@@ -140,10 +140,85 @@ Phase 4 adds polish and integration features: mobile responsiveness, accessibili
 
 ---
 
-### Task 16: Template Tags (as_mathinput, render_math)
+### ✅Task 16: Template Tags (as_mathinput, render_math)
 **Owner:** Lead Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 2
+
+**as_mathinput template filter**
+Purpose: Render a field value as a MathInput widget in templates.
+Usage:
+```
+{% load mathinput_tags %}
+
+{# Basic usage #}
+{{ form.equation|as_mathinput }}
+
+{# With mode shorthand #}
+{{ form.equation|as_mathinput:"integrals_differentials" }}
+
+{# With mode and preset #}
+{{ form.equation|as_mathinput:"mode=integrals_differentials,preset=calculus" }}
+```
+
+***Features:***
+- Parses mode and preset from argument string
+- Supports shorthand (just mode name) or key=value format
+- Creates MathInputWidget with specified mode/preset
+- Returns safe HTML
+
+**render_math template filter**
+Purpose: Render stored LaTeX/MathML formulas for display.
+Usage:
+```
+{% load mathinput_tags %}
+
+{# Basic usage (uses default renderer from settings) #}
+{{ formula|render_math }}
+
+{# With specific renderer #}
+{{ formula|render_math:"katex" }}
+{{ formula|render_math:"mathjax" }}
+```
+
+***Features:***
+- Auto-detects format (LaTeX vs MathML)
+- Supports KaTeX and MathJax renderers
+- Removes dollar signs if present
+- Escapes HTML for safe output
+- Handles empty values gracefully
+- Returns safe HTML
+
+**render_math_inline template filter**
+Purpose: Render LaTeX as inline math (bonus feature).
+Usage:
+```
+{% load mathinput_tags %}
+
+{{ formula|render_math_inline }}
+```
+
+***Features:***
+Renders as inline math (KaTeX inline or MathJax \(...\))
+Same renderer support as render_math
+Safe HTML output
+
+**Usage example**
+```
+{% load mathinput_tags %}
+
+{# Render widget in form #}
+{{ form.equation|as_mathinput }}
+
+{# Render widget with specific mode #}
+{{ form.calculus_problem|as_mathinput:"mode=integrals_differentials,preset=calculus" }}
+
+{# Display stored formula #}
+{{ problem.equation|render_math }}
+
+{# Display inline formula #}
+The formula \({{ formula|render_math_inline }}\) is important.
+```
 
 **Implementation:**
 - Create `django-mathinput/mathinput/templatetags/mathinput_tags.py`:
