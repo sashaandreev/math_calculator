@@ -895,8 +895,168 @@
         }
     }
 
+    // ============================================================================
+    // Bidirectional Sync Manager
+    // ============================================================================
+
     /**
-     * Sync source mode textarea with LaTeX.
+     * Sync Manager Class
+     * 
+     * Manages bidirectional synchronization between visual builder and source mode.
+     */
+    class SyncManager {
+        constructor(widget) {
+            this.widget = widget;
+            this.visualBuilder = widget.visualBuilder;
+            this.sourceEditor = widget.querySelector('.mi-source-textarea');
+            this.syncing = false;
+            this.lastEdit = {source: 'visual', timestamp: 0};
+            this.syncIndicator = null;
+        }
+
+        /**
+         * Sync from visual builder to source editor.
+         */
+        syncFromVisual() {
+            if (this.syncing || !this.sourceEditor) {
+                return;
+            }
+
+            this.syncing = true;
+            this.showSyncIndicator();
+
+            try {
+                const latex = this.visualBuilder ? this.visualBuilder.getLatex() : '';
+                this.sourceEditor.value = latex || '';
+
+                this.lastEdit = {source: 'visual', timestamp: Date.now()};
+
+                // Update hidden field
+                const hiddenInput = this.widget.querySelector('.mi-hidden-input');
+                if (hiddenInput) {
+                    hiddenInput.value = latex;
+                }
+            } catch (error) {
+                console.error('Error syncing from visual:', error);
+            } finally {
+                this.syncing = false;
+                this.hideSyncIndicator();
+            }
+        }
+
+        /**
+         * Sync from source editor to visual builder.
+         */
+        syncFromSource() {
+            if (this.syncing || !this.visualBuilder || !this.sourceEditor) {
+                return;
+            }
+
+            this.syncing = true;
+            this.showSyncIndicator();
+
+            try {
+                const latex = this.sourceEditor.value || '';
+
+                // Parse LaTeX into AST
+                const ast = parseLatex(latex);
+
+                // Update visual builder
+                this.visualBuilder.setAST(ast);
+                this.visualBuilder.render();
+
+                this.lastEdit = {source: 'source', timestamp: Date.now()};
+
+                // Update hidden field
+                const hiddenInput = this.widget.querySelector('.mi-hidden-input');
+                if (hiddenInput) {
+                    hiddenInput.value = latex;
+                }
+
+                // Update preview
+                const previewContainer = this.widget.querySelector('.mi-preview');
+                if (previewContainer) {
+                    renderPreview(latex, previewContainer);
+                }
+
+                // Clear any previous errors
+                this.hideParseError();
+            } catch (error) {
+                console.error('Error syncing from source:', error);
+                this.showParseError(error);
+            } finally {
+                this.syncing = false;
+                this.hideSyncIndicator();
+            }
+        }
+
+        /**
+         * Show sync indicator.
+         */
+        showSyncIndicator() {
+            // Create or show sync indicator
+            if (!this.syncIndicator) {
+                this.syncIndicator = document.createElement('div');
+                this.syncIndicator.className = 'mi-sync-indicator';
+                this.syncIndicator.textContent = 'Syncing...';
+                this.syncIndicator.style.cssText = 'position: absolute; top: 8px; right: 8px; padding: 4px 8px; background: #007bff; color: white; border-radius: 4px; font-size: 11px; z-index: 1000;';
+                this.widget.style.position = 'relative';
+                this.widget.appendChild(this.syncIndicator);
+            }
+            this.syncIndicator.style.display = 'block';
+        }
+
+        /**
+         * Hide sync indicator.
+         */
+        hideSyncIndicator() {
+            if (this.syncIndicator) {
+                setTimeout(() => {
+                    if (this.syncIndicator) {
+                        this.syncIndicator.style.display = 'none';
+                    }
+                }, 200);
+            }
+        }
+
+        /**
+         * Show parse error.
+         */
+        showParseError(error) {
+            const errorContainer = this.widget.querySelector('.mi-preview-error');
+            if (errorContainer) {
+                errorContainer.textContent = `Parse error: ${error.message || 'Invalid LaTeX'}`;
+                errorContainer.style.display = 'block';
+            }
+        }
+
+        /**
+         * Hide parse error.
+         */
+        hideParseError() {
+            const errorContainer = this.widget.querySelector('.mi-preview-error');
+            if (errorContainer) {
+                errorContainer.style.display = 'none';
+            }
+        }
+
+        /**
+         * Check if sync is in progress.
+         */
+        isSyncing() {
+            return this.syncing;
+        }
+
+        /**
+         * Get last edit information.
+         */
+        getLastEdit() {
+            return this.lastEdit;
+        }
+    }
+
+    /**
+     * Sync source mode textarea with LaTeX (legacy function for backward compatibility).
      * 
      * @param {HTMLElement} widget - Widget container element
      * @param {string} latex - LaTeX string
@@ -904,9 +1064,16 @@
     function syncSourceMode(widget, latex) {
         if (!widget) return;
 
-        const sourceTextarea = widget.querySelector('.mi-source-textarea');
-        if (sourceTextarea) {
-            sourceTextarea.value = latex || '';
+        const syncManager = widget.syncManager;
+        if (syncManager) {
+            // Use sync manager if available
+            syncManager.syncFromVisual();
+        } else {
+            // Fallback to direct sync
+            const sourceTextarea = widget.querySelector('.mi-source-textarea');
+            if (sourceTextarea) {
+                sourceTextarea.value = latex || '';
+            }
         }
     }
 
@@ -1564,8 +1731,17 @@
         // Update hidden field
         updateHiddenField(widget, latex);
 
-        // Sync source mode
-        syncSourceMode(widget, latex);
+        // Sync to source mode (debounced)
+        const syncManager = widget.syncManager;
+        if (syncManager) {
+            const debouncedSyncFromVisual = debounce(() => {
+                syncManager.syncFromVisual();
+            }, 300);
+            debouncedSyncFromVisual();
+        } else {
+            // Fallback to legacy sync
+            syncSourceMode(widget, latex);
+        }
 
         // Render preview (debounced)
         const previewContainer = widget.querySelector('.mi-preview');
@@ -1617,6 +1793,15 @@
                 handleModeChange(widget, newMode);
             });
         }
+
+        // Setup keyboard shortcut (Ctrl+M) for mode toggle
+        widget.addEventListener('keydown', function(e) {
+            // Ctrl+M or Cmd+M (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                toggleVisualSourceMode(widget);
+            }
+        });
 
         // Setup placeholder keyboard navigation
         const visualBuilder = widget.visualBuilder;
@@ -2092,6 +2277,10 @@
     window.handleModeChange = handleModeChange;
     window.getModeConfig = getModeConfig;
     window.updateToolbarVisibility = updateToolbarVisibility;
+    
+    // Expose sync manager and related functions globally
+    window.SyncManager = SyncManager;
+    window.toggleVisualSourceMode = toggleVisualSourceMode;
 
     /**
      * Initialize a math input widget instance.
@@ -2164,16 +2353,53 @@
     }
 
     /**
+     * Toggle between visual and source modes.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function toggleVisualSourceMode(widget) {
+        const tabs = widget.querySelectorAll('.mi-tab');
+        const visualTab = widget.querySelector('.mi-tab-visual');
+        const sourceTab = widget.querySelector('.mi-tab-source');
+        
+        if (!visualTab || !sourceTab) {
+            return;
+        }
+
+        // Determine current mode
+        const isVisualActive = visualTab.classList.contains('active');
+        
+        // Toggle to opposite mode
+        if (isVisualActive) {
+            sourceTab.click();
+        } else {
+            visualTab.click();
+        }
+    }
+
+    /**
      * Initialize mode tabs (Visual/Source switching).
      */
     function initializeModeTabs(widget) {
         const tabs = widget.querySelectorAll('.mi-tab');
         const visualContainer = widget.querySelector('.mi-visual-builder-container');
         const sourceContainer = widget.querySelector('.mi-source-container');
+        const syncManager = widget.syncManager;
 
         tabs.forEach(tab => {
             tab.addEventListener('click', function() {
                 const mode = this.dataset.mode;
+
+                // Sync before switching if needed
+                if (syncManager && !syncManager.isSyncing()) {
+                    if (mode === 'source') {
+                        // Switching to source - sync from visual
+                        syncManager.syncFromVisual();
+                    } else if (mode === 'visual') {
+                        // Switching to visual - sync from source
+                        syncManager.syncFromSource();
+                    }
+                }
 
                 // Update tab states
                 tabs.forEach(t => {
@@ -2196,21 +2422,42 @@
     }
 
     /**
-     * Initialize source mode textarea.
+     * Initialize source mode textarea and sync manager.
      */
     function initializeSourceMode(widget, initialValue) {
         const sourceTextarea = widget.querySelector('.mi-source-textarea');
         const hiddenInput = widget.querySelector('.mi-hidden-input');
 
-        if (sourceTextarea && hiddenInput) {
+        if (sourceTextarea) {
             // Set initial value
             if (initialValue) {
                 sourceTextarea.value = initialValue;
             }
 
-            // Sync source to hidden input (basic - will be enhanced in Phase 3)
+            // Create sync manager
+            const syncManager = new SyncManager(widget);
+            widget.syncManager = syncManager;
+
+            // Debounced sync from source to visual
+            const debouncedSyncFromSource = debounce(() => {
+                syncManager.syncFromSource();
+            }, 300);
+
+            // Sync source to visual builder on input
             sourceTextarea.addEventListener('input', function() {
-                hiddenInput.value = this.value;
+                // Update hidden input immediately
+                if (hiddenInput) {
+                    hiddenInput.value = this.value;
+                }
+                // Debounced sync to visual builder
+                debouncedSyncFromSource();
+            });
+
+            // Sync on blur (immediate sync when user leaves source mode)
+            sourceTextarea.addEventListener('blur', function() {
+                if (!syncManager.isSyncing()) {
+                    syncManager.syncFromSource();
+                }
             });
         }
     }

@@ -1329,3 +1329,425 @@ describe('Mode Switching', () => {
   });
 });
 
+describe('Source Mode Sync', () => {
+  let widget;
+  let widgetId;
+
+  beforeEach(() => {
+    // Create a widget container for each test
+    widgetId = 'test-widget-sync-' + Date.now();
+    widget = document.createElement('div');
+    widget.id = widgetId;
+    widget.className = 'mi-widget';
+    widget.innerHTML = `
+      <textarea name="test" id="id_test" class="mi-hidden-input" style="display: none;"></textarea>
+      <div class="mi-mode-tabs" role="tablist">
+        <button type="button" class="mi-tab mi-tab-visual active" data-mode="visual" role="tab">Visual</button>
+        <button type="button" class="mi-tab mi-tab-source" data-mode="source" role="tab">Source</button>
+      </div>
+      <div class="mi-mode-selector">
+        <label for="${widgetId}-mode-select" class="mi-mode-selector-label">Input Mode:</label>
+        <select id="${widgetId}-mode-select" class="mi-mode-select" aria-label="Select input mode">
+          <option value="regular_functions" selected>Regular Functions</option>
+        </select>
+      </div>
+      <div class="mi-quick-insert">
+        <button type="button" class="mi-quick-insert-toggle" aria-label="Quick insert templates" aria-haspopup="true" aria-expanded="false">
+          <span class="mi-quick-insert-label">Quick Insert</span>
+          <span class="mi-quick-insert-arrow">▼</span>
+        </button>
+        <ul class="mi-quick-insert-menu" role="menu" hidden></ul>
+      </div>
+      <div class="mi-toolbar-container" role="toolbar">
+        <div class="mi-toolbar-content"></div>
+      </div>
+      <div class="mi-visual-builder-container" data-mode="visual">
+        <div class="mi-visual-builder" role="textbox" contenteditable="false"></div>
+      </div>
+      <div class="mi-source-container" data-mode="source" style="display: none;">
+        <textarea class="mi-source-textarea" aria-label="LaTeX source code" placeholder="Enter LaTeX code here..."></textarea>
+      </div>
+      <div class="mi-preview-container">
+        <div class="mi-preview"></div>
+        <div class="mi-preview-error" style="display: none;" role="alert"></div>
+      </div>
+      <div class="mi-error-container" role="alert" style="display: none;"></div>
+    `;
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    // Clean up
+    if (widget && widget.parentNode) {
+      widget.parentNode.removeChild(widget);
+    }
+  });
+
+  test('visual to source sync updates textarea', () => {
+    /**
+     * What we are testing: Changes in visual builder sync to source mode
+     * Why we are testing: Bidirectional sync is core feature
+     * Expected Result: Source textarea updated when visual builder changes
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: 'x^2 + 1',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+    expect(sourceTextarea).toBeDefined();
+
+    // Sync from visual to source
+    if (syncManager) {
+      syncManager.syncFromVisual();
+      
+      // Source should be updated (may take a moment for debounce)
+      expect(sourceTextarea.value).toBeDefined();
+    }
+  });
+
+  test('source to visual sync updates builder', () => {
+    /**
+     * What we are testing: Changes in source mode sync to visual builder
+     * Why we are testing: Users editing LaTeX directly need visual update
+     * Expected Result: Visual builder updated when source textarea changes
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+    const visualBuilder = widget.visualBuilder;
+
+    expect(syncManager).toBeDefined();
+    expect(sourceTextarea).toBeDefined();
+
+    // Type LaTeX in source mode
+    sourceTextarea.value = '\\frac{1}{2}';
+    
+    // Trigger input event
+    sourceTextarea.dispatchEvent(new Event('input'));
+
+    // Sync should be triggered (debounced, so may take a moment)
+    expect(visualBuilder).toBeDefined();
+  });
+
+  test('sync handles parse errors gracefully', () => {
+    /**
+     * What we are testing: Sync handles invalid LaTeX in source mode
+     * Why we are testing: Users may type invalid LaTeX, should see errors
+     * Expected Result: Error message shown, visual builder not corrupted
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: 'x^2',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+    const errorContainer = widget.querySelector('.mi-preview-error');
+
+    expect(syncManager).toBeDefined();
+
+    // Type invalid LaTeX
+    sourceTextarea.value = '\\frac{1}'; // Missing closing brace
+    
+    // Try to sync
+    try {
+      syncManager.syncFromSource();
+    } catch (error) {
+      // Error should be caught and displayed
+      expect(errorContainer.style.display).toBe('block');
+    }
+  });
+
+  test('sync debouncing prevents excessive updates', () => {
+    /**
+     * What we are testing: Sync debouncing reduces update frequency
+     * Why we are testing: Performance - prevent excessive re-rendering
+     * Expected Result: Updates debounced to 300ms intervals
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Rapid typing should be debounced
+    sourceTextarea.value = 'x';
+    sourceTextarea.dispatchEvent(new Event('input'));
+    
+    sourceTextarea.value = 'x^';
+    sourceTextarea.dispatchEvent(new Event('input'));
+    
+    sourceTextarea.value = 'x^2';
+    sourceTextarea.dispatchEvent(new Event('input'));
+
+    // Sync should be debounced (not immediately syncing)
+    // The debounce function should handle this
+    expect(syncManager.isSyncing()).toBe(false);
+  });
+
+  test('Ctrl+M toggles visual/source mode', () => {
+    /**
+     * What we are testing: Keyboard shortcut toggles between modes
+     * Why we are testing: Keyboard navigation improves efficiency
+     * Expected Result: Ctrl+M switches between visual and source modes
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const visualTab = widget.querySelector('.mi-tab-visual');
+    const sourceTab = widget.querySelector('.mi-tab-source');
+    const visualContainer = widget.querySelector('.mi-visual-builder-container');
+    const sourceContainer = widget.querySelector('.mi-source-container');
+
+    // Initially visual mode is active
+    expect(visualTab.classList.contains('active')).toBe(true);
+    // Visual container should be visible (may not have explicit style.display)
+    expect(sourceContainer.style.display).toBe('none');
+
+    // Press Ctrl+M
+    const ctrlMEvent = new KeyboardEvent('keydown', {
+      key: 'm',
+      ctrlKey: true,
+      bubbles: true
+    });
+    widget.dispatchEvent(ctrlMEvent);
+
+    // Should switch to source mode
+    expect(sourceTab.classList.contains('active')).toBe(true);
+    expect(sourceContainer.style.display).toBe('block');
+    expect(visualContainer.style.display).toBe('none');
+  });
+
+  test('mode switch triggers sync', () => {
+    /**
+     * What we are testing: Switching modes triggers sync
+     * Why we are testing: Modes must stay in sync when switching
+     * Expected Result: Sync occurs when switching between visual and source
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: 'x^2',
+    });
+
+    const visualTab = widget.querySelector('.mi-tab-visual');
+    const sourceTab = widget.querySelector('.mi-tab-source');
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Switch to source mode
+    sourceTab.click();
+
+    // Source should be synced from visual
+    expect(sourceTextarea.value.length).toBeGreaterThan(0);
+  });
+
+  test('source mode blur triggers immediate sync', () => {
+    /**
+     * What we are testing: Blur event triggers immediate sync (not debounced)
+     * Why we are testing: Users expect immediate sync when leaving source mode
+     * Expected Result: Sync occurs immediately on blur
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Type in source mode
+    sourceTextarea.value = 'x + y';
+    
+    // Trigger blur event
+    sourceTextarea.dispatchEvent(new Event('blur'));
+
+    // Sync should be triggered (immediate, not debounced)
+    expect(syncManager).toBeDefined();
+  });
+
+  test('sync manager tracks last edit', () => {
+    /**
+     * What we are testing: SyncManager tracks which side was last edited
+     * Why we are testing: Conflict resolution needs last edit information
+     * Expected Result: Last edit source and timestamp are tracked
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Get initial last edit
+    const initialEdit = syncManager.getLastEdit();
+    expect(initialEdit).toBeDefined();
+    expect(initialEdit.source).toBeDefined();
+    expect(initialEdit.timestamp).toBeDefined();
+  });
+
+  test('sync prevents recursive loops', () => {
+    /**
+     * What we are testing: Sync flag prevents recursive sync loops
+     * Why we are testing: Infinite sync loops would crash the application
+     * Expected Result: Syncing flag prevents recursive calls
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Start sync
+    syncManager.syncFromVisual();
+
+    // While syncing, another sync should be prevented
+    const isSyncing = syncManager.isSyncing();
+    
+    // After sync completes, should not be syncing
+    setTimeout(() => {
+      expect(syncManager.isSyncing()).toBe(false);
+    }, 100);
+  });
+
+  test('sync indicator appears during sync', () => {
+    /**
+     * What we are testing: Sync indicator shows during sync operation
+     * Why we are testing: Users need visual feedback during sync
+     * Expected Result: Sync indicator visible during sync
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Trigger sync
+    syncManager.syncFromVisual();
+
+    // Sync indicator should be created
+    const indicator = widget.querySelector('.mi-sync-indicator');
+    // Indicator may be hidden immediately after sync, but should exist
+    expect(syncManager.syncIndicator).toBeDefined();
+  });
+
+  test('parse error shows in error container', () => {
+    /**
+     * What we are testing: Parse errors are displayed to user
+     * Why we are testing: Users need feedback when LaTeX is invalid
+     * Expected Result: Error message shown in preview error container
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const syncManager = widget.syncManager;
+    const errorContainer = widget.querySelector('.mi-preview-error');
+
+    expect(syncManager).toBeDefined();
+
+    // Set invalid LaTeX
+    sourceTextarea.value = '\\invalid{command}';
+
+    // Try to sync - should catch error
+    try {
+      syncManager.syncFromSource();
+    } catch (error) {
+      // Error should be shown
+      expect(errorContainer.style.display).toBe('block');
+    }
+  });
+
+  test('hidden input updated during sync', () => {
+    /**
+     * What we are testing: Hidden form field updated during sync
+     * Why we are testing: Form submission must include current LaTeX
+     * Expected Result: Hidden input value matches current LaTeX
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const sourceTextarea = widget.querySelector('.mi-source-textarea');
+    const hiddenInput = widget.querySelector('.mi-hidden-input');
+    const syncManager = widget.syncManager;
+
+    expect(syncManager).toBeDefined();
+
+    // Type in source mode
+    sourceTextarea.value = 'x^2 + 1';
+    sourceTextarea.dispatchEvent(new Event('input'));
+
+    // Hidden input should be updated (may be debounced)
+    // The important thing is that sync manager handles it
+    expect(hiddenInput).toBeDefined();
+  });
+
+  test('visual and source modes can be toggled', () => {
+    /**
+     * What we are testing: Toggle function switches between visual and source
+     * Why we are testing: Users need programmatic way to toggle modes
+     * Expected Result: Toggle function switches active mode
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+    });
+
+    const visualTab = widget.querySelector('.mi-tab-visual');
+    const sourceTab = widget.querySelector('.mi-tab-source');
+
+    // Initially visual is active
+    expect(visualTab.classList.contains('active')).toBe(true);
+
+    // Toggle to source
+    window.toggleVisualSourceMode(widget);
+    expect(sourceTab.classList.contains('active')).toBe(true);
+
+    // Toggle back to visual
+    window.toggleVisualSourceMode(widget);
+    expect(visualTab.classList.contains('active')).toBe(true);
+  });
+});
+

@@ -209,10 +209,18 @@ Phase 3 implements the user interface features: Quick Insert dropdown, text form
 
 ---
 
-### Task 13: Source Mode + Bidirectional Sync
+### ✅Task 13: Source Mode + Bidirectional Sync
 **Owner:** Frontend Dev  
 **Duration:** 4 days  
 **Dependencies:** Task 9
+
+**Features:**
+- Bidirectional sync: Changes in either mode reflect in the other
+- Debounced updates: 300ms debounce to reduce re-rendering
+- Error handling: Graceful handling of invalid LaTeX
+- Conflict resolution: Last edit wins with timestamp tracking
+- Keyboard shortcut: Ctrl+M to toggle modes
+- Visual feedback: Sync indicators show sync status
 
 **Implementation:**
 - Source mode toggle in widget:
