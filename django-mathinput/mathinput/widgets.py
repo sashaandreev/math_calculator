@@ -98,6 +98,25 @@ class MathInputWidget(forms.Widget):
         widget_id = attrs.get('id') or f'id_{name}'
         attrs['id'] = widget_id
         
+        # Get renderer from settings
+        try:
+            renderer_type = getattr(settings, 'MATHINPUT_RENDERER', 'katex')
+        except Exception:
+            renderer_type = 'katex'
+        
+        # Get extensions from settings
+        try:
+            extensions = getattr(settings, 'MATHINPUT_KATEX_EXTENSIONS', [])
+            if isinstance(extensions, str):
+                # If string, convert to list
+                extensions = [ext.strip() for ext in extensions.split(',') if ext.strip()]
+        except Exception:
+            extensions = []
+        
+        # Convert extensions to JSON string for template
+        import json
+        extensions_json = json.dumps(extensions)
+        
         # Prepare template context
         context = {
             'name': name,
@@ -106,6 +125,8 @@ class MathInputWidget(forms.Widget):
             'preset': self.preset,
             'widget_id': widget_id,
             'attrs': attrs,
+            'renderer': renderer_type,
+            'extensions': extensions_json,
         }
         
         return render_to_string(self.template_name, context)

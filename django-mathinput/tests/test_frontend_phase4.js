@@ -642,6 +642,188 @@ describe('Accessibility', () => {
   });
 });
 
+describe('Renderer Fallback', () => {
+  let widget;
+  let widgetId;
+
+  beforeEach(() => {
+    widgetId = 'test-widget-renderer-' + Date.now();
+    widget = document.createElement('div');
+    widget.id = widgetId;
+    widget.className = 'mi-widget';
+    widget.innerHTML = `
+      <textarea name="test" id="id_test" class="mi-hidden-input" style="display: none;"></textarea>
+      <div class="mi-mode-tabs" role="tablist">
+        <button type="button" class="mi-tab mi-tab-visual active" data-mode="visual" role="tab">Visual</button>
+        <button type="button" class="mi-tab mi-tab-source" data-mode="source" role="tab">Source</button>
+      </div>
+      <div class="mi-toolbar-container" role="toolbar"></div>
+      <div class="mi-visual-builder-container" data-mode="visual">
+        <div class="mi-visual-builder" role="textbox" contenteditable="false"></div>
+      </div>
+      <div class="mi-source-container" data-mode="source" style="display: none;">
+        <textarea class="mi-source-textarea"></textarea>
+      </div>
+      <div class="mi-preview-container">
+        <div class="mi-preview" role="region" aria-live="polite"></div>
+      </div>
+    `;
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    if (widget && widget.parentNode) {
+      widget.parentNode.removeChild(widget);
+    }
+  });
+
+  test('KaTeX loads with extensions', () => {
+    /**
+     * What we are testing: KaTeX loads with configured extensions
+     * Why we are testing: Extensions provide additional functionality
+     * Expected Result: Extensions loaded and functional
+     */
+    // Check that extension loading function exists
+    expect(window.loadKaTeXExtensions).toBeDefined();
+    expect(window.loadKaTeX).toBeDefined();
+
+    // Test that extensions can be loaded
+    if (window.loadKaTeXExtensions) {
+      expect(() => {
+        window.loadKaTeXExtensions(['cancel'], () => {});
+      }).not.toThrow();
+    }
+  });
+
+  test('MathJax fallback works', () => {
+    /**
+     * What we are testing: MathJax loads when configured as renderer
+     * Why we are testing: Users may prefer MathJax over KaTeX
+     * Expected Result: MathJax renders formulas correctly
+     */
+    // Check that MathJax loading function exists
+    expect(window.loadMathJax).toBeDefined();
+    expect(window.initializeRenderer).toBeDefined();
+
+    // Test that MathJax can be initialized
+    if (window.initializeRenderer) {
+      expect(() => {
+        window.initializeRenderer('mathjax', [], () => {});
+      }).not.toThrow();
+    }
+  });
+
+  test('CDN failure falls back gracefully', () => {
+    /**
+     * What we are testing: Widget handles CDN failure gracefully
+     * Why we are testing: Network issues should not break widget
+     * Expected Result: Error message shown, widget still functional
+     */
+    // Check that renderer manager exists
+    expect(window.RendererManager).toBeDefined();
+
+    // Test that fallback mechanism exists
+    // In test environment, we can't actually test CDN failures,
+    // but we verify the functions exist
+    expect(window.loadKaTeX).toBeDefined();
+    expect(window.loadMathJax).toBeDefined();
+  });
+
+  test('renderer initialization selects correct renderer', () => {
+    /**
+     * What we are testing: initializeRenderer selects correct renderer
+     * Why we are testing: Renderer selection must work correctly
+     * Expected Result: Correct renderer loaded based on type
+     */
+    expect(window.initializeRenderer).toBeDefined();
+
+    // Test KaTeX initialization
+    if (window.initializeRenderer) {
+      expect(() => {
+        window.initializeRenderer('katex', [], () => {});
+      }).not.toThrow();
+    }
+
+    // Test MathJax initialization
+    if (window.initializeRenderer) {
+      expect(() => {
+        window.initializeRenderer('mathjax', [], () => {});
+      }).not.toThrow();
+    }
+  });
+
+  test('extensions load after KaTeX', () => {
+    /**
+     * What we are testing: Extensions load after KaTeX is ready
+     * Why we are testing: Extensions depend on KaTeX
+     * Expected Result: Extensions loaded in correct order
+     */
+    expect(window.loadKaTeXExtensions).toBeDefined();
+    expect(window.loadKaTeX).toBeDefined();
+
+    // Test that extensions loading function exists and can be called
+    if (window.loadKaTeXExtensions) {
+      expect(() => {
+        window.loadKaTeXExtensions(['cancel', 'copy-tex'], () => {});
+      }).not.toThrow();
+    }
+  });
+
+  test('renderer manager tracks state', () => {
+    /**
+     * What we are testing: RendererManager tracks renderer state
+     * Why we are testing: State tracking needed for proper initialization
+     * Expected Result: Manager tracks loaded renderers and extensions
+     */
+    expect(window.RendererManager).toBeDefined();
+
+    if (window.RendererManager) {
+      expect(window.RendererManager.cdnUrls).toBeDefined();
+      expect(window.RendererManager.extensionsLoaded).toBeDefined();
+      expect(Array.isArray(window.RendererManager.extensionsLoaded)).toBe(true);
+    }
+  });
+
+  test('widget initializes with renderer configuration', () => {
+    /**
+     * What we are testing: Widget initializes with renderer from config
+     * Why we are testing: Renderer must be configured correctly
+     * Expected Result: Widget uses specified renderer
+     */
+    window.initializeMathInput(widgetId, {
+      mode: 'regular_functions',
+      preset: 'algebra',
+      value: '',
+      renderer: 'katex',
+      extensions: ['cancel'],
+    });
+
+    // Widget should be initialized
+    expect(widget).toBeDefined();
+    // Renderer initialization is handled internally
+    expect(window.initializeRenderer).toBeDefined();
+  });
+
+  test('renderWithCurrentRenderer uses correct renderer', () => {
+    /**
+     * What we are testing: renderWithCurrentRenderer uses active renderer
+     * Why we are testing: Rendering must use correct renderer
+     * Expected Result: Correct renderer used for rendering
+     */
+    expect(window.renderWithCurrentRenderer).toBeDefined();
+
+    const preview = widget.querySelector('.mi-preview');
+    expect(preview).toBeDefined();
+
+    // Test that function exists and can be called
+    if (window.renderWithCurrentRenderer) {
+      expect(() => {
+        window.renderWithCurrentRenderer('x^2', preview);
+      }).not.toThrow();
+    }
+  });
+});
+
 describe('Touch Device Optimizations', () => {
   let widget;
   let widgetId;

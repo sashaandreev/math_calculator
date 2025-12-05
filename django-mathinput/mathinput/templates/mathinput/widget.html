@@ -113,12 +113,13 @@
 {# Initialize widget JavaScript #}
 <script>
     // Widget initialization will be handled by mathinput.js
-    // This will be implemented in Phase 2
     if (typeof initializeMathInput !== 'undefined') {
         initializeMathInput('{{ widget_id }}', {
             mode: '{{ mode }}',
             preset: '{{ preset }}',
             value: {{ value|default:"''"|safe }},
+            renderer: '{{ renderer|default:"katex" }}',
+            extensions: {{ extensions|default:"[]"|safe }},
         });
     }
 </script>

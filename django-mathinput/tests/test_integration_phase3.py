@@ -134,3 +134,39 @@ def test_quick_insert_preset_integration():
     # Widget should render with algebra preset
     assert 'data-preset="algebra"' in html2
 
+
+@pytest.mark.integration
+class TestRendererIntegration(TestCase):
+    """
+    What we are testing: Renderer system integrates with widget
+    Why we are testing: Renderer must work in full widget context
+    Expected Result: Renderer loads and renders correctly
+    """
+    
+    def test_widget_passes_renderer_to_template(self):
+        """
+        What we are testing: Widget passes renderer configuration to template
+        Why we are testing: Renderer must be configured correctly
+        Expected Result: Template receives renderer and extensions
+        """
+        widget = MathInputWidget()
+        html = widget.render('equation', '')
+        
+        # Should contain renderer configuration
+        assert html is not None
+        assert 'renderer' in html.lower() or 'katex' in html.lower()
+    
+    def test_widget_passes_extensions_to_template(self):
+        """
+        What we are testing: Widget passes extensions to template
+        Why we are testing: Extensions must be configured
+        Expected Result: Template receives extensions list
+        """
+        widget = MathInputWidget()
+        html = widget.render('equation', '')
+        
+        # Should contain extensions configuration
+        assert html is not None
+        # Extensions are passed as JSON in script tag
+        assert 'extensions' in html.lower() or '[]' in html
+

@@ -816,6 +816,297 @@
     }
 
     // ============================================================================
+    // ============================================================================
+    // Renderer Management (KaTeX Extensions + MathJax Fallback)
+    // ============================================================================
+
+    /**
+     * Renderer configuration and state.
+     */
+    const RendererManager = {
+        currentRenderer: null,
+        katexLoaded: false,
+        mathjaxLoaded: false,
+        extensionsLoaded: [],
+        cdnUrls: {
+            katex: 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js',
+            katexCSS: 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css',
+            mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+            katexExtensions: 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/',
+        },
+        // SRI hashes for security (these should be updated with actual hashes)
+        sriHashes: {
+            katex: 'sha384-...', // Placeholder - should be actual hash
+            katexCSS: 'sha384-...',
+            mathjax: 'sha384-...',
+            // Extension hashes would go here
+        },
+    };
+
+    /**
+     * Load KaTeX library.
+     * 
+     * @param {Function} callback - Callback function when loaded
+     */
+    function loadKaTeX(callback) {
+        if (RendererManager.katexLoaded) {
+            if (callback) callback();
+            return;
+        }
+
+        // Check if already loading
+        if (document.querySelector('script[src*="katex"]')) {
+            // Wait for existing script to load
+            const checkInterval = setInterval(() => {
+                if (typeof katex !== 'undefined') {
+                    RendererManager.katexLoaded = true;
+                    clearInterval(checkInterval);
+                    if (callback) callback();
+                }
+            }, 100);
+            return;
+        }
+
+        // Load KaTeX CSS
+        if (!document.querySelector('link[href*="katex"]')) {
+            const cssLink = document.createElement('link');
+            cssLink.rel = 'stylesheet';
+            cssLink.href = RendererManager.cdnUrls.katexCSS;
+            if (RendererManager.sriHashes.katexCSS && RendererManager.sriHashes.katexCSS !== 'sha384-...') {
+                cssLink.integrity = RendererManager.sriHashes.katexCSS;
+                cssLink.crossOrigin = 'anonymous';
+            }
+            document.head.appendChild(cssLink);
+        }
+
+        // Load KaTeX JS
+        const script = document.createElement('script');
+        script.src = RendererManager.cdnUrls.katex;
+        if (RendererManager.sriHashes.katex && RendererManager.sriHashes.katex !== 'sha384-...') {
+            script.integrity = RendererManager.sriHashes.katex;
+            script.crossOrigin = 'anonymous';
+        }
+        script.onload = function() {
+            RendererManager.katexLoaded = true;
+            RendererManager.currentRenderer = 'katex';
+            if (callback) callback();
+        };
+        script.onerror = function() {
+            console.error('KaTeX failed to load');
+            // Fallback to MathJax if KaTeX fails
+            loadMathJax(callback);
+        };
+        document.head.appendChild(script);
+    }
+
+    /**
+     * Load KaTeX extensions.
+     * 
+     * @param {Array<string>} extensions - List of extension names
+     * @param {Function} callback - Callback function when all loaded
+     */
+    function loadKaTeXExtensions(extensions, callback) {
+        if (!extensions || extensions.length === 0) {
+            if (callback) callback();
+            return;
+        }
+
+        // Ensure KaTeX is loaded first
+        loadKaTeX(() => {
+            let loadedCount = 0;
+            const totalExtensions = extensions.length;
+
+            extensions.forEach(ext => {
+                // Skip if already loaded
+                if (RendererManager.extensionsLoaded.includes(ext)) {
+                    loadedCount++;
+                    if (loadedCount === totalExtensions && callback) {
+                        callback();
+                    }
+                    return;
+                }
+
+                // Check if already loading
+                if (document.querySelector(`script[src*="${ext}"]`)) {
+                    loadedCount++;
+                    if (loadedCount === totalExtensions && callback) {
+                        callback();
+                    }
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = `${RendererManager.cdnUrls.katexExtensions}${ext}.min.js`;
+                // SRI hash would go here if available
+                script.onload = function() {
+                    RendererManager.extensionsLoaded.push(ext);
+                    loadedCount++;
+                    if (loadedCount === totalExtensions && callback) {
+                        callback();
+                    }
+                };
+                script.onerror = function() {
+                    console.warn(`KaTeX extension ${ext} failed to load`);
+                    loadedCount++;
+                    if (loadedCount === totalExtensions && callback) {
+                        callback();
+                    }
+                };
+                document.head.appendChild(script);
+            });
+        });
+    }
+
+    /**
+     * Load MathJax library.
+     * 
+     * @param {Function} callback - Callback function when loaded
+     */
+    function loadMathJax(callback) {
+        if (RendererManager.mathjaxLoaded) {
+            if (callback) callback();
+            return;
+        }
+
+        // Check if already loading
+        if (document.querySelector('script[src*="mathjax"]')) {
+            // Wait for existing script to load
+            const checkInterval = setInterval(() => {
+                if (typeof MathJax !== 'undefined') {
+                    RendererManager.mathjaxLoaded = true;
+                    clearInterval(checkInterval);
+                    if (callback) callback();
+                }
+            }, 100);
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = RendererManager.cdnUrls.mathjax;
+        if (RendererManager.sriHashes.mathjax && RendererManager.sriHashes.mathjax !== 'sha384-...') {
+            script.integrity = RendererManager.sriHashes.mathjax;
+            script.crossOrigin = 'anonymous';
+        }
+        script.onload = function() {
+            RendererManager.mathjaxLoaded = true;
+            RendererManager.currentRenderer = 'mathjax';
+            
+            // Configure MathJax
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise();
+            }
+            
+            if (callback) callback();
+        };
+        script.onerror = function() {
+            console.error('MathJax failed to load');
+            // Fallback to KaTeX if MathJax fails
+            loadKaTeX(callback);
+        };
+        document.head.appendChild(script);
+    }
+
+    /**
+     * Initialize renderer based on configuration.
+     * 
+     * @param {string} rendererType - 'katex' or 'mathjax'
+     * @param {Array<string>} extensions - KaTeX extensions to load
+     * @param {Function} callback - Callback when renderer is ready
+     */
+    function initializeRenderer(rendererType, extensions, callback) {
+        rendererType = (rendererType || 'katex').toLowerCase();
+
+        if (rendererType === 'mathjax') {
+            loadMathJax(callback);
+        } else {
+            // Default to KaTeX
+            loadKaTeX(() => {
+                if (extensions && extensions.length > 0) {
+                    loadKaTeXExtensions(extensions, callback);
+                } else {
+                    if (callback) callback();
+                }
+            });
+        }
+    }
+
+    /**
+     * Render LaTeX with current renderer.
+     * 
+     * @param {string} latex - LaTeX string to render
+     * @param {HTMLElement} container - Container element
+     * @param {Object} options - Rendering options
+     */
+    function renderWithCurrentRenderer(latex, container, options = {}) {
+        const renderer = RendererManager.currentRenderer || 'katex';
+
+        if (renderer === 'mathjax') {
+            renderWithMathJax(latex, container, options);
+        } else {
+            renderWithKaTeX(latex, container, options);
+        }
+    }
+
+    /**
+     * Render LaTeX with MathJax.
+     * 
+     * @param {string} latex - LaTeX string to render
+     * @param {HTMLElement} container - Container element
+     * @param {Object} options - Rendering options
+     */
+    function renderWithMathJax(latex, container, options = {}) {
+        if (typeof MathJax === 'undefined') {
+            // MathJax not loaded, try to load it
+            loadMathJax(() => {
+                renderWithMathJax(latex, container, options);
+            });
+            return;
+        }
+
+        try {
+            // Create a temporary element for MathJax
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = `\\[${latex}\\]`;
+            container.innerHTML = '';
+            container.appendChild(tempDiv);
+
+            // Typeset with MathJax
+            if (MathJax.typesetPromise) {
+                MathJax.typesetPromise([container]).catch(error => {
+                    console.error('MathJax render error:', error);
+                    showRenderError(container, 'MathJax rendering failed');
+                });
+            } else {
+                // Fallback for older MathJax versions
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub, container]);
+            }
+        } catch (error) {
+            console.error('MathJax render error:', error);
+            showRenderError(container, 'MathJax rendering failed');
+        }
+    }
+
+    /**
+     * Render LaTeX with KaTeX (existing function, enhanced).
+     * 
+     * @param {string} latex - LaTeX string to render
+     * @param {HTMLElement} container - Container element
+     * @param {Object} options - Rendering options
+     */
+    function renderWithKaTeX(latex, container, options = {}) {
+        // Use existing renderPreview function logic
+        renderPreview(latex, container);
+    }
+
+    // Expose renderer functions globally
+    window.RendererManager = RendererManager;
+    window.loadKaTeX = loadKaTeX;
+    window.loadKaTeXExtensions = loadKaTeXExtensions;
+    window.loadMathJax = loadMathJax;
+    window.initializeRenderer = initializeRenderer;
+    window.renderWithCurrentRenderer = renderWithCurrentRenderer;
+
+    // ============================================================================
     // Preview Rendering with KaTeX
     // ============================================================================
 
@@ -2692,12 +2983,33 @@
         // Initialize source mode sync
         initializeSourceMode(widget, config.value || '');
 
-        // Initialize preview with KaTeX
-        const previewContainer = widget.querySelector('.mi-preview');
-        if (previewContainer && config.value) {
-            renderPreview(config.value, previewContainer);
-        } else if (previewContainer) {
-            previewContainer.innerHTML = '<span class="mi-preview-empty">Preview will appear here</span>';
+        // Initialize renderer based on configuration
+        const rendererType = config.renderer || 'katex';
+        const extensions = config.extensions || [];
+        
+        // Initialize renderer (loads KaTeX or MathJax)
+        if (window.initializeRenderer) {
+            initializeRenderer(rendererType, extensions, () => {
+                // Renderer loaded, initialize preview
+                const previewContainer = widget.querySelector('.mi-preview');
+                if (previewContainer && config.value) {
+                    if (rendererType === 'mathjax') {
+                        renderWithMathJax(config.value, previewContainer);
+                    } else {
+                        renderPreview(config.value, previewContainer);
+                    }
+                } else if (previewContainer) {
+                    previewContainer.innerHTML = '<span class="mi-preview-empty">Preview will appear here</span>';
+                }
+            });
+        } else {
+            // Fallback to existing KaTeX preview
+            const previewContainer = widget.querySelector('.mi-preview');
+            if (previewContainer && config.value) {
+                renderPreview(config.value, previewContainer);
+            } else if (previewContainer) {
+                previewContainer.innerHTML = '<span class="mi-preview-empty">Preview will appear here</span>';
+            }
         }
 
         // Initialize quick insert dropdown

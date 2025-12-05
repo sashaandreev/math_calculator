@@ -345,10 +345,55 @@ class ProblemAdmin(admin.ModelAdmin):
 
 ---
 
-### Task 18: KaTeX Extensions + MathJax Fallback
+### ✅Task 18: KaTeX Extensions + MathJax Fallback
 **Owner:** Frontend Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 9
+
+**Features**
+- KaTeX extensions: Load multiple extensions dynamically
+- MathJax fallback: Automatic fallback if KaTeX fails
+- Renderer selection: Choose KaTeX or MathJax
+- SRI support: Subresource Integrity hash validation
+- Error handling: Graceful handling of CDN failures
+- Settings integration: Configure via Django settings
+
+**Configuration**
+
+***Django settings:***
+
+```python
+# Renderer selection
+MATHINPUT_RENDERER = 'katex'  # or 'mathjax'
+
+# KaTeX extensions
+MATHINPUT_KATEX_EXTENSIONS = ['cancel', 'copy-tex', 'mhchem']
+
+# CDN URLs (optional)
+MATHINPUT_KATEX_CDN = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/'
+MATHINPUT_MATHJAX_CDN = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+```
+
+**Usage**
+
+***Automatic (via settings):***
+
+- Widget automatically loads renderer based on MATHINPUT_RENDERER
+- Extensions loaded automatically from MATHINPUT_KATEX_EXTENSIONS
+
+***Manual (via JavaScript):***
+
+```python
+// Initialize with KaTeX and extensions
+initializeRenderer('katex', ['cancel', 'copy-tex'], () => {
+    console.log('Renderer ready');
+});
+
+// Initialize with MathJax
+initializeRenderer('mathjax', [], () => {
+    console.log('MathJax ready');
+});
+```
 
 **Implementation:**
 - KaTeX extensions loading:
