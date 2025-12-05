@@ -1,0 +1,158 @@
+{% comment %}
+Trigonometry functions toolbar.
+
+Provides buttons for trigonometric functions:
+- Basic trig functions (sin, cos, tan)
+- Inverse trig functions
+- Hyperbolic functions
+{% endcomment %}
+<div class="mi-toolbar mi-toolbar-trig" role="toolbar" aria-label="Trigonometry functions">
+    {# Basic trigonometric functions #}
+    <button type="button"
+            class="mi-button mi-button-sin"
+            data-action="insert"
+            data-template="\\sin()"
+            aria-label="Sine"
+            title="Sine (sin)">
+        sin
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-cos"
+            data-action="insert"
+            data-template="\\cos()"
+            aria-label="Cosine"
+            title="Cosine (cos)">
+        cos
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-tan"
+            data-action="insert"
+            data-template="\\tan()"
+            aria-label="Tangent"
+            title="Tangent (tan)">
+        tan
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-cot"
+            data-action="insert"
+            data-template="\\cot()"
+            aria-label="Cotangent"
+            title="Cotangent (cot)">
+        cot
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-sec"
+            data-action="insert"
+            data-template="\\sec()"
+            aria-label="Secant"
+            title="Secant (sec)">
+        sec
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-csc"
+            data-action="insert"
+            data-template="\\csc()"
+            aria-label="Cosecant"
+            title="Cosecant (csc)">
+        csc
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Inverse trigonometric functions #}
+    <button type="button"
+            class="mi-button mi-button-arcsin"
+            data-action="insert"
+            data-template="\\arcsin()"
+            aria-label="Arcsine"
+            title="Arcsine (arcsin)">
+        arcsin
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-arccos"
+            data-action="insert"
+            data-template="\\arccos()"
+            aria-label="Arccosine"
+            title="Arccosine (arccos)">
+        arccos
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-arctan"
+            data-action="insert"
+            data-template="\\arctan()"
+            aria-label="Arctangent"
+            title="Arctangent (arctan)">
+        arctan
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Hyperbolic functions #}
+    <button type="button"
+            class="mi-button mi-button-sinh"
+            data-action="insert"
+            data-template="\\sinh()"
+            aria-label="Hyperbolic sine"
+            title="Hyperbolic sine (sinh)">
+        sinh
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-cosh"
+            data-action="insert"
+            data-template="\\cosh()"
+            aria-label="Hyperbolic cosine"
+            title="Hyperbolic cosine (cosh)">
+        cosh
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-tanh"
+            data-action="insert"
+            data-template="\\tanh()"
+            aria-label="Hyperbolic tangent"
+            title="Hyperbolic tangent (tanh)">
+        tanh
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Other functions #}
+    <button type="button"
+            class="mi-button mi-button-log"
+            data-action="insert"
+            data-template="\\log()"
+            aria-label="Logarithm"
+            title="Logarithm (log)">
+        log
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-ln"
+            data-action="insert"
+            data-template="\\ln()"
+            aria-label="Natural logarithm"
+            title="Natural logarithm (ln)">
+        ln
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-exp"
+            data-action="insert"
+            data-template="\\exp()"
+            aria-label="Exponential"
+            title="Exponential (exp)">
+        e<sup>x</sup>
+    </button>
+</div>
+

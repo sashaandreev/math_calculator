@@ -1,0 +1,119 @@
+{% comment %}
+Text formatting toolbar.
+
+Provides buttons for text formatting operations:
+- Bold, italic, text mode
+- Font sizes
+- Colors
+- Text alignment
+{% endcomment %}
+<div class="mi-toolbar mi-toolbar-text" role="toolbar" aria-label="Text formatting">
+    {# Text formatting buttons #}
+    <button type="button"
+            class="mi-button mi-button-bold"
+            data-action="insert"
+            data-template="\\mathbf{}"
+            aria-label="Bold text"
+            title="Bold (Ctrl+B)">
+        <strong>B</strong>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-italic"
+            data-action="insert"
+            data-template="\\mathit{}"
+            aria-label="Italic text"
+            title="Italic (Ctrl+I)">
+        <em>I</em>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-text"
+            data-action="insert"
+            data-template="\\text{}"
+            aria-label="Text mode"
+            title="Text mode">
+        T
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-roman"
+            data-action="insert"
+            data-template="\\mathrm{}"
+            aria-label="Roman font"
+            title="Roman font">
+        R
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-sans-serif"
+            data-action="insert"
+            data-template="\\mathsf{}"
+            aria-label="Sans-serif font"
+            title="Sans-serif font">
+        S
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-monospace"
+            data-action="insert"
+            data-template="\\mathtt{}"
+            aria-label="Monospace font"
+            title="Monospace font">
+        M
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Size buttons #}
+    <button type="button"
+            class="mi-button mi-button-large"
+            data-action="insert"
+            data-template="\\large{}"
+            aria-label="Large text"
+            title="Large text">
+        Large
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-small"
+            data-action="insert"
+            data-template="\\small{}"
+            aria-label="Small text"
+            title="Small text">
+        Small
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Color buttons #}
+    <button type="button"
+            class="mi-button mi-button-color-red"
+            data-action="insert"
+            data-template="\\textcolor{red}{}"
+            aria-label="Red text"
+            title="Red text">
+        <span style="color: red;">A</span>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-color-blue"
+            data-action="insert"
+            data-template="\\textcolor{blue}{}"
+            aria-label="Blue text"
+            title="Blue text">
+        <span style="color: blue;">A</span>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-color-green"
+            data-action="insert"
+            data-template="\\textcolor{green}{}"
+            aria-label="Green text"
+            title="Green text">
+        <span style="color: green;">A</span>
+    </button>
+</div>
+

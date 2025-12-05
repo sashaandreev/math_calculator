@@ -1,0 +1,163 @@
+{% comment %}
+Matrix operations toolbar.
+
+Provides buttons for matrix operations:
+- Matrix creation (various types)
+- Matrix operations (transpose, inverse, determinant)
+- Vectors
+{% endcomment %}
+<div class="mi-toolbar mi-toolbar-matrices" role="toolbar" aria-label="Matrix operations">
+    {# Matrix types #}
+    <button type="button"
+            class="mi-button mi-button-matrix"
+            data-action="insert"
+            data-template="\\begin{pmatrix} & \\\\ & \\end{pmatrix}"
+            aria-label="Matrix (parentheses)"
+            title="Matrix (parentheses)">
+        [ ]
+<sub>p</sub>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-matrix-brackets"
+            data-action="insert"
+            data-template="\\begin{bmatrix} & \\\\ & \\end{bmatrix}"
+            aria-label="Matrix (brackets)"
+            title="Matrix (brackets)">
+        [ ]
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-matrix-determinant"
+            data-action="insert"
+            data-template="\\begin{vmatrix} & \\\\ & \\end{vmatrix}"
+            aria-label="Determinant"
+            title="Determinant (| |)">
+        | |
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-matrix-norm"
+            data-action="insert"
+            data-template="\\begin{Vmatrix} & \\\\ & \\end{Vmatrix}"
+            aria-label="Matrix norm"
+            title="Matrix norm (‖ ‖)">
+        ‖ ‖
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Matrix operations #}
+    <button type="button"
+            class="mi-button mi-button-transpose"
+            data-action="insert"
+            data-template="^{T}"
+            aria-label="Transpose"
+            title="Transpose (A^T)">
+        A<sup>T</sup>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-inverse"
+            data-action="insert"
+            data-template="^{-1}"
+            aria-label="Inverse"
+            title="Inverse (A⁻¹)">
+        A<sup>-1</sup>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-determinant"
+            data-action="insert"
+            data-template="\\det()"
+            aria-label="Determinant"
+            title="Determinant (det)">
+        det
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-trace"
+            data-action="insert"
+            data-template="\\text{tr}()"
+            aria-label="Trace"
+            title="Trace (tr)">
+        tr
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Vectors #}
+    <button type="button"
+            class="mi-button mi-button-vector"
+            data-action="insert"
+            data-template="\\mathbf{}"
+            aria-label="Vector"
+            title="Vector (bold)">
+        <strong>v</strong>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-vector-arrow"
+            data-action="insert"
+            data-template="\\vec{}"
+            aria-label="Vector with arrow"
+            title="Vector with arrow (→)">
+        <strong>v</strong>→
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Matrix multiplication #}
+    <button type="button"
+            class="mi-button mi-button-matrix-multiply"
+            data-action="insert"
+            data-template="\\cdot"
+            aria-label="Matrix multiplication"
+            title="Matrix multiplication (·)">
+        ·
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-kronecker"
+            data-action="insert"
+            data-template="\\otimes"
+            aria-label="Kronecker product"
+            title="Kronecker product (⊗)">
+        ⊗
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-hadamard"
+            data-action="insert"
+            data-template="\\odot"
+            aria-label="Hadamard product"
+            title="Hadamard product (⊙)">
+        ⊙
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Special matrices #}
+    <button type="button"
+            class="mi-button mi-button-identity"
+            data-action="insert"
+            data-template="I"
+            aria-label="Identity matrix"
+            title="Identity matrix (I)">
+        I
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-zero-matrix"
+            data-action="insert"
+            data-template="\\mathbf{0}"
+            aria-label="Zero matrix"
+            title="Zero matrix (0)">
+        <strong>0</strong>
+    </button>
+</div>
+

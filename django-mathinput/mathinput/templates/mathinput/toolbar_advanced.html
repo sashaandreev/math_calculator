@@ -1,0 +1,212 @@
+{% comment %}
+Advanced operations toolbar.
+
+Provides buttons for advanced mathematical operations:
+- Sums, products, limits
+- Operators and relations
+- Set operations
+{% endcomment %}
+<div class="mi-toolbar mi-toolbar-advanced" role="toolbar" aria-label="Advanced operations">
+    {# Sums and products #}
+    <button type="button"
+            class="mi-button mi-button-sum"
+            data-action="insert"
+            data-template="\\sum_{}^{}"
+            aria-label="Summation"
+            title="Summation (Σ)">
+        Σ
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-product"
+            data-action="insert"
+            data-template="\\prod_{}^{}"
+            aria-label="Product"
+            title="Product (Π)">
+        Π
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-limit"
+            data-action="insert"
+            data-template="\\lim_{}"
+            aria-label="Limit"
+            title="Limit (lim)">
+        lim
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Relations #}
+    <button type="button"
+            class="mi-button mi-button-less-than"
+            data-action="insert"
+            data-template="<"
+            aria-label="Less than"
+            title="Less than (<)">
+        &lt;
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-greater-than"
+            data-action="insert"
+            data-template=">"
+            aria-label="Greater than"
+            title="Greater than (>)">
+        &gt;
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-less-equal"
+            data-action="insert"
+            data-template="\\leq"
+            aria-label="Less than or equal"
+            title="Less than or equal (≤)">
+        ≤
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-greater-equal"
+            data-action="insert"
+            data-template="\\geq"
+            aria-label="Greater than or equal"
+            title="Greater than or equal (≥)">
+        ≥
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-approx"
+            data-action="insert"
+            data-template="\\approx"
+            aria-label="Approximately equal"
+            title="Approximately equal (≈)">
+        ≈
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-equiv"
+            data-action="insert"
+            data-template="\\equiv"
+            aria-label="Equivalent"
+            title="Equivalent (≡)">
+        ≡
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Set operations #}
+    <button type="button"
+            class="mi-button mi-button-in"
+            data-action="insert"
+            data-template="\\in"
+            aria-label="Element of"
+            title="Element of (∈)">
+        ∈
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-not-in"
+            data-action="insert"
+            data-template="\\notin"
+            aria-label="Not element of"
+            title="Not element of (∉)">
+        ∉
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-subset"
+            data-action="insert"
+            data-template="\\subset"
+            aria-label="Subset"
+            title="Subset (⊂)">
+        ⊂
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-subset-equal"
+            data-action="insert"
+            data-template="\\subseteq"
+            aria-label="Subset or equal"
+            title="Subset or equal (⊆)">
+        ⊆
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-union"
+            data-action="insert"
+            data-template="\\cup"
+            aria-label="Union"
+            title="Union (∪)">
+        ∪
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-intersection"
+            data-action="insert"
+            data-template="\\cap"
+            aria-label="Intersection"
+            title="Intersection (∩)">
+        ∩
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-empty-set"
+            data-action="insert"
+            data-template="\\emptyset"
+            aria-label="Empty set"
+            title="Empty set (∅)">
+        ∅
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Logical operators #}
+    <button type="button"
+            class="mi-button mi-button-forall"
+            data-action="insert"
+            data-template="\\forall"
+            aria-label="For all"
+            title="For all (∀)">
+        ∀
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-exists"
+            data-action="insert"
+            data-template="\\exists"
+            aria-label="Exists"
+            title="Exists (∃)">
+        ∃
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-and"
+            data-action="insert"
+            data-template="\\land"
+            aria-label="And"
+            title="And (∧)">
+        ∧
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-or"
+            data-action="insert"
+            data-template="\\lor"
+            aria-label="Or"
+            title="Or (∨)">
+        ∨
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-not"
+            data-action="insert"
+            data-template="\\neg"
+            aria-label="Not"
+            title="Not (¬)">
+        ¬
+    </button>
+</div>
+

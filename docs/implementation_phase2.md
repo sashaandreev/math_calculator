@@ -53,7 +53,7 @@ def get_mode():
 
 ---
 
-### Task 6: Preset System (6 Preset Modules)
+### ✅Task 6: Preset System (6 Preset Modules)
 **Owner:** Lead Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 1
@@ -108,20 +108,60 @@ def get_preset():
 
 ---
 
-### Task 7: Toolbar Templates (7 Tabs)
+### ✅Task 7: Toolbar Templates (7 Tabs)
 **Owner:** UI Dev  
 **Duration:** 4 days  
 **Dependencies:** Task 2
 
 **Implementation:**
 - Create 7 toolbar template files in `django-mathinput/mathinput/templates/mathinput/`:
-  - `toolbar_text.html` - Text formatting buttons
-  - `toolbar_basic.html` - Basic operations (fractions, roots, powers)
-  - `toolbar_advanced.html` - Advanced operations
-  - `toolbar_calculus.html` - Calculus operations (integrals, derivatives)
-  - `toolbar_matrices.html` - Matrix operations
-  - `toolbar_trig.html` - Trigonometry functions
-  - `toolbar_symbols.html` - Mathematical symbols
+  - `toolbar_text.html` - Text formatting buttons (11 buttons)
+  - `toolbar_basic.html` - Basic operations (fractions, roots, powers)  (20 buttons)
+  - `toolbar_advanced.html` - Advanced operations  (20 buttons)
+  - `toolbar_calculus.html` - Calculus operations (integrals, derivatives) (16 buttons)
+  - `toolbar_matrices.html` - Matrix operations (15 buttons)
+  - `toolbar_trig.html` - Trigonometry functions  (15 buttons)
+  - `toolbar_symbols.html` - Mathematical symbols (30+ buttons)
+
+**Button categories by toolbar:**
+- Text Toolbar:
+    - Bold, italic, text mode, fonts (roman, sans-serif, monospace)
+    - Size controls (large, small)
+    - Colors (red, blue, green)
+- Basic Toolbar:
+    - Fractions, roots (square, nth root)
+    - Powers (square, cube, general)
+    - Subscripts
+    - Basic operators (+, −, ×, ÷, =, ≠)
+    - Parentheses, brackets, braces, absolute value
+- Advanced Toolbar:
+    - Sums, products, limits
+    - Relations (<, >, ≤, ≥, ≈, ≡)
+    - Set operations (∈, ∉, ⊂, ⊆, ∪, ∩, ∅)
+    - Logical operators (∀, ∃, ∧, ∨, ¬)
+- Calculus Toolbar:
+    - Integrals (indefinite, definite, double, triple)
+    - Derivatives (first, second, partial)
+    - Vector calculus (gradient, divergence, curl, Laplacian)
+    - Limits (including infinity)
+    - Sums and products
+- Matrices Toolbar:
+    - Matrix types (parentheses, brackets, determinant, norm)
+    - Matrix operations (transpose, inverse, determinant, trace)
+    - Vectors (bold, with arrow)
+    - Matrix multiplication (dot, Kronecker, Hadamard)
+    - Special matrices (identity, zero)
+- Trig Toolbar:
+    - Basic trig (sin, cos, tan, cot, sec, csc)
+    - Inverse trig (arcsin, arccos, arctan)
+    - Hyperbolic (sinh, cosh, tanh)
+    - Logarithms (log, ln, exp)
+- Symbols Toolbar:
+    - Greek letters (lowercase: α, β, γ, δ, ε, θ, λ, μ, π, σ, φ, ω)
+    - Greek letters (uppercase: Δ, Γ, Λ, Π, Σ, Φ, Ω)
+    - Constants (∞, π, e, i)
+    - Arrows (→, ←, ↔, ⇒, ⇔)
+    - Dots (…, ⋯, ⋮, ⋱)
 
 Each toolbar template:
 ```html
@@ -151,7 +191,9 @@ Each toolbar template:
 - 7 toolbar HTML templates
 - All buttons with proper ARIA labels
 - Icon buttons (Unicode/SVG)
-- Responsive layout
+- Responsive layout structure
+- Accessibility features (ARIA labels, titles, roles)
+- Visual separators for button grouping
 
 ---
 

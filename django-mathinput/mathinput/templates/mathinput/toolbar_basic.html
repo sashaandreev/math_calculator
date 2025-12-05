@@ -1,0 +1,173 @@
+{% comment %}
+Basic operations toolbar.
+
+Provides buttons for basic mathematical operations:
+- Fractions, roots, powers
+- Basic operators
+- Parentheses and brackets
+{% endcomment %}
+<div class="mi-toolbar mi-toolbar-basic" role="toolbar" aria-label="Basic operations">
+    {# Fractions and roots #}
+    <button type="button"
+            class="mi-button mi-button-fraction"
+            data-action="insert"
+            data-template="\\frac{}{}"
+            aria-label="Insert fraction"
+            title="Fraction (/)">
+        /
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-square-root"
+            data-action="insert"
+            data-template="\\sqrt{}"
+            aria-label="Square root"
+            title="Square root (√)">
+        √
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-nth-root"
+            data-action="insert"
+            data-template="\\sqrt[]{}"
+            aria-label="Nth root"
+            title="Nth root">
+        <sup>n</sup>√
+    </button>
+    
+    {# Powers and subscripts #}
+    <button type="button"
+            class="mi-button mi-button-square"
+            data-action="insert"
+            data-template="^{2}"
+            aria-label="Square"
+            title="Square (x²)">
+        x²
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-cube"
+            data-action="insert"
+            data-template="^{3}"
+            aria-label="Cube"
+            title="Cube (x³)">
+        x³
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-power"
+            data-action="insert"
+            data-template="^{}"
+            aria-label="Power"
+            title="Power (x^n)">
+        x<sup>n</sup>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-subscript"
+            data-action="insert"
+            data-template="_{}"
+            aria-label="Subscript"
+            title="Subscript (x_n)">
+        x<sub>n</sub>
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Basic operators #}
+    <button type="button"
+            class="mi-button mi-button-plus"
+            data-action="insert"
+            data-template="+"
+            aria-label="Plus"
+            title="Plus (+)">
+        +
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-minus"
+            data-action="insert"
+            data-template="-"
+            aria-label="Minus"
+            title="Minus (-)">
+        −
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-multiply"
+            data-action="insert"
+            data-template="\\cdot"
+            aria-label="Multiply"
+            title="Multiply (·)">
+        ×
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-divide"
+            data-action="insert"
+            data-template="\\div"
+            aria-label="Divide"
+            title="Divide (÷)">
+        ÷
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-equals"
+            data-action="insert"
+            data-template="="
+            aria-label="Equals"
+            title="Equals (=)">
+        =
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-not-equals"
+            data-action="insert"
+            data-template="\\neq"
+            aria-label="Not equals"
+            title="Not equals (≠)">
+        ≠
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Parentheses and brackets #}
+    <button type="button"
+            class="mi-button mi-button-parentheses"
+            data-action="insert"
+            data-template="\\left(\\right)"
+            aria-label="Parentheses"
+            title="Parentheses ()">
+        ( )
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-brackets"
+            data-action="insert"
+            data-template="\\left[\\right]"
+            aria-label="Brackets"
+            title="Brackets []">
+        [ ]
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-braces"
+            data-action="insert"
+            data-template="\\left\\{\\right\\}"
+            aria-label="Braces"
+            title="Braces {}">
+        { }
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-absolute"
+            data-action="insert"
+            data-template="\\left|\\right|"
+            aria-label="Absolute value"
+            title="Absolute value |x|">
+        |x|
+    </button>
+</div>
+

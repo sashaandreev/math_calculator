@@ -1,0 +1,172 @@
+{% comment %}
+Calculus operations toolbar.
+
+Provides buttons for calculus operations:
+- Integrals (definite and indefinite)
+- Derivatives (first, second, partial)
+- Limits
+- Vector calculus operators
+{% endcomment %}
+<div class="mi-toolbar mi-toolbar-calculus" role="toolbar" aria-label="Calculus operations">
+    {# Integrals #}
+    <button type="button"
+            class="mi-button mi-button-integral"
+            data-action="insert"
+            data-template="\\int{}"
+            aria-label="Indefinite integral"
+            title="Indefinite integral (∫)">
+        ∫
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-definite-integral"
+            data-action="insert"
+            data-template="\\int_{}^{}{}"
+            aria-label="Definite integral"
+            title="Definite integral (∫ with limits)">
+        ∫<sub>a</sub><sup>b</sup>
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-double-integral"
+            data-action="insert"
+            data-template="\\iint{}"
+            aria-label="Double integral"
+            title="Double integral (∬)">
+        ∬
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-triple-integral"
+            data-action="insert"
+            data-template="\\iiint{}"
+            aria-label="Triple integral"
+            title="Triple integral (∭)">
+        ∭
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Derivatives #}
+    <button type="button"
+            class="mi-button mi-button-derivative"
+            data-action="insert"
+            data-template="\\frac{d}{dx}"
+            aria-label="Derivative"
+            title="Derivative (d/dx)">
+        d/dx
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-second-derivative"
+            data-action="insert"
+            data-template="\\frac{d^2}{dx^2}"
+            aria-label="Second derivative"
+            title="Second derivative (d²/dx²)">
+        d²/dx²
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-partial-derivative"
+            data-action="insert"
+            data-template="\\frac{\\partial}{\\partial x}"
+            aria-label="Partial derivative"
+            title="Partial derivative (∂/∂x)">
+        ∂/∂x
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-second-partial"
+            data-action="insert"
+            data-template="\\frac{\\partial^2}{\\partial x^2}"
+            aria-label="Second partial derivative"
+            title="Second partial derivative (∂²/∂x²)">
+        ∂²/∂x²
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Vector calculus #}
+    <button type="button"
+            class="mi-button mi-button-gradient"
+            data-action="insert"
+            data-template="\\nabla"
+            aria-label="Gradient"
+            title="Gradient (∇)">
+        ∇
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-divergence"
+            data-action="insert"
+            data-template="\\nabla \\cdot"
+            aria-label="Divergence"
+            title="Divergence (∇·)">
+        ∇·
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-curl"
+            data-action="insert"
+            data-template="\\nabla \\times"
+            aria-label="Curl"
+            title="Curl (∇×)">
+        ∇×
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-laplacian"
+            data-action="insert"
+            data-template="\\nabla^2"
+            aria-label="Laplacian"
+            title="Laplacian (∇²)">
+        ∇²
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Limits #}
+    <button type="button"
+            class="mi-button mi-button-limit"
+            data-action="insert"
+            data-template="\\lim_{}"
+            aria-label="Limit"
+            title="Limit (lim)">
+        lim
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-limit-infinity"
+            data-action="insert"
+            data-template="\\lim_{x \\to \\infty}"
+            aria-label="Limit to infinity"
+            title="Limit to infinity">
+        lim<sub>x→∞</sub>
+    </button>
+    
+    {# Separator #}
+    <span class="mi-toolbar-separator" aria-hidden="true"></span>
+    
+    {# Sums and products #}
+    <button type="button"
+            class="mi-button mi-button-sum"
+            data-action="insert"
+            data-template="\\sum_{}^{}"
+            aria-label="Summation"
+            title="Summation (Σ)">
+        Σ
+    </button>
+    
+    <button type="button"
+            class="mi-button mi-button-product"
+            data-action="insert"
+            data-template="\\prod_{}^{}"
+            aria-label="Product"
+            title="Product (Π)">
+        Π
+    </button>
+</div>
+
