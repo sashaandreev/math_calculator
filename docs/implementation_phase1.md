@@ -177,10 +177,19 @@ security.py
 
 ---
 
-### Task 4: Validators Module (Complexity Checks)
+### ✅Task 4: Validators Module (Complexity Checks)
 **Owner:** Lead Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 1, Task 3
+
+**Features:**
+    - Length validation: prevents formulas exceeding MAX_FORMULA_LENGTH (10,000 chars)
+    - Dangerous pattern detection: checks for unsafe content before other validations
+    - Command whitelist validation: ensures only allowed commands are used
+    - Nesting depth validation: prevents deeply nested structures (max 50 levels)
+    - Matrix size validation: prevents oversized matrices (max 100×100)
+    - Sanitization: returns sanitized output
+    
 
 **Implementation:**
 - Create `django-mathinput/mathinput/validators.py`:
@@ -228,6 +237,10 @@ security.py
       # Implementation
       pass
   ```
+
+- Configuration:
+    - Uses Django settings with fallbacks if not configured
+    - Configurable limits via MATHINPUT_MAX_FORMULA_LENGTH, MATHINPUT_MAX_NESTING_DEPTH, MATHINPUT_MAX_MATRIX_SIZE
 
 **Deliverables:**
 - Validator class with complexity checks
