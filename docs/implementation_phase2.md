@@ -322,7 +322,7 @@ All AST functions are exposed globally for use in other scripts:
 
 ---
 
-### Task 9: Vanilla JS Core (Insert, Sync, Preview)
+### ✅Task 9: Vanilla JS Core (Insert, Sync, Preview)
 **Owner:** Frontend Dev  
 **Duration:** 5 days  
 **Dependencies:** Task 8
