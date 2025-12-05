@@ -89,8 +89,22 @@ def get_preset():
 
 **Deliverables:**
 - 6 preset configuration modules
-- Preset loader function
-- Preset validation
+- Preset loader function with registry
+- Preset validation (is_valid_preset)
+- Error handling for invalid preset codes
+- Domain-specific quick inserts and button highlighting
+
+**Preset details:**
+
+| Preset | Quick Inserts | Recommended Modes | Tab Priority |
+|--------|---------------|-------------------|--------------|
+| Algebra | 7 | regular_functions, advanced_expressions | text → basic → advanced |
+| Calculus | 8 | integrals_differentials | text → calculus → basic |
+| Physics | 9 | physics_engineering | text → calculus → symbols |
+| Machine Learning | 7 | matrices, advanced_expressions | text → matrices → advanced |
+| Statistics | 8 | statistics_probability | text → advanced → symbols |
+| Probability | 8 | statistics_probability | text → advanced → symbols |
+
 
 ---
 
