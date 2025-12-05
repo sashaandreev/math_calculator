@@ -1107,8 +1107,6 @@
     window.CursorManager = CursorManager;
     window.handleButtonClick = handleButtonClick;
     window.renderPreview = renderPreview;
-    window.QuickInsertManager = QuickInsertManager;
-    window.initializeQuickInsert = initializeQuickInsert;
 
     /**
      * Quick Insert Manager
@@ -1366,7 +1364,7 @@
             }
 
             // Get current cursor position
-            const cursor = cursorManager.getCurrentCursor();
+            const cursor = cursorManager.getCursorPosition();
 
             // Create node from template
             const newNode = createNodeFromTemplate(template);
@@ -1501,6 +1499,10 @@
         const quickInsertManager = new QuickInsertManager(widget, presetConfig);
         widget.quickInsertManager = quickInsertManager;
     }
+
+    // Expose QuickInsertManager and initializeQuickInsert globally
+    window.QuickInsertManager = QuickInsertManager;
+    window.initializeQuickInsert = initializeQuickInsert;
 
     /**
      * Initialize a math input widget instance.

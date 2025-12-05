@@ -5,10 +5,17 @@ Phase 3 implements the user interface features: Quick Insert dropdown, text form
 
 ## Tasks
 
-### Task 10: Quick Insert Dropdown
+### ✅Task 10: Quick Insert Dropdown
 **Owner:** UI Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 6, Task 7
+
+**Features:**
+- Click to open/close dropdown
+- Click menu item to insert template
+- Keyboard navigation in menu
+- Auto-close after selection
+- Template insertion updates visual builder, preview, and hidden field
 
 **Implementation:**
 - Create `django-mathinput/mathinput/templates/mathinput/quick_insert.html`:
