@@ -65,6 +65,8 @@ MIT License
 
 ## Running Tests
 
+### Python Tests
+
 Tests should be run from the `django-mathinput` directory:
 
 ```bash
@@ -89,6 +91,31 @@ python -m pytest tests/ -m user_story -v
 ```
 
 **Note:** Running tests from the root directory may cause pytest marker warnings. Always run tests from the `django-mathinput` directory.
+
+### Frontend Tests (JavaScript)
+
+Frontend tests require Node.js and Jest. See `tests/FRONTEND_TESTING.md` for detailed setup instructions.
+
+**Quick Setup:**
+
+```bash
+cd django-mathinput
+npm install --save-dev jest @jest/globals jsdom jest-environment-jsdom
+npm run test:frontend
+```
+
+**Available Commands:**
+
+```bash
+# Run all frontend tests
+npm run test:frontend
+
+# Run tests in watch mode (for development)
+npm run test:frontend:watch
+
+# Run tests with coverage report
+npm run test:frontend:coverage
+```
 
 ## Contributing
 
