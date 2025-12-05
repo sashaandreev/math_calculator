@@ -4,6 +4,7 @@ Basic tests for MathInputWidget structure.
 These tests verify the widget can be instantiated and has the correct structure.
 Full tests will be in Phase 1 testing.
 """
+import pytest
 import os
 import django
 from django.conf import settings
@@ -16,50 +17,53 @@ if not settings.configured:
 from mathinput.widgets import MathInputWidget
 
 
+@pytest.mark.unit
 def test_widget_instantiation():
-    """Test that widget can be instantiated with defaults."""
+    """
+    What we are testing: MathInputWidget initializes with default mode and preset
+    Why we are testing: Ensure widget works without explicit configuration
+    Expected Result: Widget created with default mode='regular_functions', preset='algebra'
+    """
     widget = MathInputWidget()
     assert widget.mode == 'regular_functions'
     assert widget.preset == 'algebra'
     assert widget.template_name == 'mathinput/widget.html'
 
 
+@pytest.mark.unit
 def test_widget_with_custom_mode():
-    """Test widget with custom mode."""
+    """
+    What we are testing: MathInputWidget accepts custom mode parameter
+    Why we are testing: Users need to specify input modes for different math types
+    Expected Result: Widget created with specified mode
+    """
     widget = MathInputWidget(mode='integrals_differentials')
     assert widget.mode == 'integrals_differentials'
     assert widget.preset == 'algebra'  # Default preset
 
 
+@pytest.mark.unit
 def test_widget_with_custom_preset():
-    """Test widget with custom preset."""
+    """
+    What we are testing: MathInputWidget accepts custom preset parameter
+    Why we are testing: Users need to specify domain presets for different subjects
+    Expected Result: Widget created with specified preset
+    """
     widget = MathInputWidget(preset='calculus')
     assert widget.mode == 'regular_functions'  # Default mode
     assert widget.preset == 'calculus'
 
 
+@pytest.mark.unit
 def test_widget_media():
-    """Test that widget has Media class with CSS and JS."""
+    """
+    What we are testing: Widget Media class includes CSS and JavaScript files
+    Why we are testing: Ensure stylesheets and scripts are loaded for widget rendering
+    Expected Result: CSS and JS files listed in widget.Media.css and widget.Media.js
+    """
     widget = MathInputWidget()
     assert hasattr(widget, 'Media')
     assert 'all' in widget.Media.css
     assert 'mathinput/css/mathinput.css' in widget.Media.css['all']
     assert 'mathinput/js/mathinput.js' in widget.Media.js
-
-
-if __name__ == '__main__':
-    # Simple test runner
-    test_widget_instantiation()
-    print("✓ Widget instantiation test passed")
-    
-    test_widget_with_custom_mode()
-    print("✓ Custom mode test passed")
-    
-    test_widget_with_custom_preset()
-    print("✓ Custom preset test passed")
-    
-    test_widget_media()
-    print("✓ Media class test passed")
-    
-    print("\nAll basic widget tests passed!")
 
