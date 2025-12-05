@@ -7,6 +7,8 @@ multiple input modes, and domain presets.
 from django import forms
 from django.conf import settings
 from django.template.loader import render_to_string
+from mathinput.modes import is_valid_mode
+from mathinput.presets import is_valid_preset
 
 
 class MathInputWidget(forms.Widget):
@@ -50,7 +52,11 @@ class MathInputWidget(forms.Widget):
             # Django settings not configured (e.g., during import)
             default_mode = 'regular_functions'
         
-        self.mode = mode or default_mode
+        # Validate mode - use default if invalid
+        if mode and is_valid_mode(mode):
+            self.mode = mode
+        else:
+            self.mode = default_mode
         
         # Get preset from parameter, settings, or default
         try:
@@ -59,7 +65,11 @@ class MathInputWidget(forms.Widget):
             # Django settings not configured (e.g., during import)
             default_preset = 'algebra'
         
-        self.preset = preset or default_preset
+        # Validate preset - use default if invalid
+        if preset and is_valid_preset(preset):
+            self.preset = preset
+        else:
+            self.preset = default_preset
     
     class Media:
         """CSS and JavaScript files for the widget."""

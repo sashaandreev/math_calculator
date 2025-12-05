@@ -1311,6 +1311,239 @@
         return colorMap[hex.toLowerCase()] || null;
     }
 
+    // ============================================================================
+    // Mode Switching
+    // ============================================================================
+
+    /**
+     * Mode configurations (toolbar visibility data).
+     * This should ideally be loaded from Django, but for now we provide a mapping.
+     */
+    const MODE_CONFIGS = {
+        'regular_functions': {
+            name: 'Regular Functions',
+            toolbars: {
+                visible: ['text', 'basic', 'trig'],
+                hidden: ['advanced', 'calculus', 'matrices', 'symbols'],
+                priority: ['basic', 'text', 'trig']
+            }
+        },
+        'advanced_expressions': {
+            name: 'Advanced Expressions',
+            toolbars: {
+                visible: ['text', 'basic', 'advanced', 'symbols'],
+                hidden: ['calculus', 'matrices', 'trig'],
+                priority: ['advanced', 'basic', 'text', 'symbols']
+            }
+        },
+        'integrals_differentials': {
+            name: 'Integrals/Differentials',
+            toolbars: {
+                visible: ['text', 'calculus', 'advanced', 'basic'],
+                hidden: ['trig', 'symbols', 'matrices'],
+                priority: ['calculus', 'advanced', 'basic', 'text']
+            }
+        },
+        'matrices': {
+            name: 'Matrices',
+            toolbars: {
+                visible: ['text', 'matrices', 'advanced', 'symbols'],
+                hidden: ['calculus', 'trig', 'basic'],
+                priority: ['matrices', 'advanced', 'text', 'symbols']
+            }
+        },
+        'statistics_probability': {
+            name: 'Statistics & Probability',
+            toolbars: {
+                visible: ['text', 'advanced', 'symbols', 'basic'],
+                hidden: ['calculus', 'matrices', 'trig'],
+                priority: ['advanced', 'symbols', 'text', 'basic']
+            }
+        },
+        'physics_engineering': {
+            name: 'Physics & Engineering',
+            toolbars: {
+                visible: ['text', 'calculus', 'symbols', 'advanced'],
+                hidden: ['matrices', 'trig', 'basic'],
+                priority: ['calculus', 'symbols', 'advanced', 'text']
+            }
+        }
+    };
+
+    /**
+     * Get mode configuration by code.
+     * 
+     * @param {string} modeCode - Mode code (e.g., 'regular_functions', 'matrices')
+     * @returns {Object} Mode configuration object
+     */
+    function getModeConfig(modeCode) {
+        return MODE_CONFIGS[modeCode] || MODE_CONFIGS['regular_functions'];
+    }
+
+    /**
+     * Get current LaTeX from widget.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @returns {string} Current LaTeX string
+     */
+    function getCurrentLatex(widget) {
+        const visualBuilder = widget.visualBuilder;
+        if (visualBuilder) {
+            return visualBuilder.getLatex();
+        }
+        const hiddenInput = widget.querySelector('.mi-hidden-input');
+        return hiddenInput ? hiddenInput.value : '';
+    }
+
+    /**
+     * Check if LaTeX uses operations not available in a mode.
+     * 
+     * @param {string} latex - LaTeX string to check
+     * @param {string} modeCode - Mode code to check against
+     * @returns {boolean} True if incompatible operations found
+     */
+    function usesOperationsNotInMode(latex, modeCode) {
+        if (!latex) {
+            return false;
+        }
+
+        const modeConfig = getModeConfig(modeCode);
+        const hiddenToolbars = modeConfig.toolbars.hidden;
+
+        // Check for calculus operations
+        if (hiddenToolbars.includes('calculus')) {
+            if (latex.includes('\\int') || latex.includes('\\sum') || latex.includes('\\prod') || 
+                latex.includes('\\lim') || latex.includes('\\frac{d}{') || latex.includes('\\partial')) {
+                return true;
+            }
+        }
+
+        // Check for matrix operations
+        if (hiddenToolbars.includes('matrices')) {
+            if (latex.includes('\\begin{matrix') || latex.includes('\\begin{pmatrix') || 
+                latex.includes('\\begin{bmatrix') || latex.includes('\\det') || 
+                latex.includes('\\mathbf{')) {
+                return true;
+            }
+        }
+
+        // Check for trig operations
+        if (hiddenToolbars.includes('trig')) {
+            if (latex.includes('\\sin') || latex.includes('\\cos') || latex.includes('\\tan') ||
+                latex.includes('\\sec') || latex.includes('\\csc') || latex.includes('\\cot')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Show warning for incompatible operations.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} message - Warning message
+     */
+    function showModeWarning(widget, message) {
+        const errorContainer = widget.querySelector('.mi-error-container');
+        if (!errorContainer) {
+            return;
+        }
+
+        errorContainer.textContent = message;
+        errorContainer.style.display = 'block';
+        errorContainer.setAttribute('role', 'alert');
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            errorContainer.style.display = 'none';
+        }, 5000);
+    }
+
+    /**
+     * Update toolbar visibility based on mode.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {Object} modeConfig - Mode configuration object
+     */
+    function updateToolbarVisibility(widget, modeConfig) {
+        const toolbarContainer = widget.querySelector('.mi-toolbar-container');
+        if (!toolbarContainer) {
+            return;
+        }
+
+        const visibleToolbars = modeConfig.toolbars.visible || [];
+        const hiddenToolbars = modeConfig.toolbars.hidden || [];
+
+        // Get all toolbar elements
+        const allToolbars = toolbarContainer.querySelectorAll('.mi-toolbar');
+        
+        allToolbars.forEach(toolbar => {
+            const toolbarType = toolbar.className.match(/mi-toolbar-(\w+)/);
+            if (toolbarType) {
+                const type = toolbarType[1];
+                if (visibleToolbars.includes(type)) {
+                    toolbar.style.display = '';
+                } else if (hiddenToolbars.includes(type)) {
+                    toolbar.style.display = 'none';
+                }
+            }
+        });
+
+        // Update toolbar tabs visibility
+        const toolbarTabs = toolbarContainer.querySelectorAll('.mi-toolbar-tab');
+        toolbarTabs.forEach(tab => {
+            const tabType = tab.dataset.toolbar;
+            if (tabType) {
+                if (visibleToolbars.includes(tabType)) {
+                    tab.style.display = '';
+                } else if (hiddenToolbars.includes(tabType)) {
+                    tab.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    /**
+     * Handle mode change.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} newModeCode - New mode code
+     */
+    function handleModeChange(widget, newModeCode) {
+        // 1. Preserve current formula
+        const currentLatex = getCurrentLatex(widget);
+
+        // 2. Load new mode config
+        const modeConfig = getModeConfig(newModeCode);
+        if (!modeConfig) {
+            console.warn('Invalid mode code:', newModeCode);
+            return;
+        }
+
+        // 3. Check for incompatible operations
+        if (usesOperationsNotInMode(currentLatex, newModeCode)) {
+            showModeWarning(
+                widget,
+                `Warning: Your formula contains operations that may not be available in "${modeConfig.name}" mode. The formula will be preserved, but some buttons may be hidden.`
+            );
+        }
+
+        // 4. Update widget data attribute
+        widget.dataset.mode = newModeCode;
+
+        // 5. Update toolbar visibility
+        updateToolbarVisibility(widget, modeConfig);
+
+        // 6. Update quick insert (if preset changes are needed, handle separately)
+        // For now, quick insert is preset-based, not mode-based
+
+        // 7. Re-initialize event listeners for new toolbars
+        setupEventListeners(widget);
+
+        console.log('Mode changed to:', newModeCode, modeConfig);
+    }
+
     /**
      * Update widget after inserting a node (render, preview, sync).
      * 
@@ -1375,6 +1608,15 @@
                 handleFormatButton(this, widget);
             });
         });
+
+        // Setup mode selector change handler
+        const modeSelect = widget.querySelector('.mi-mode-select');
+        if (modeSelect) {
+            modeSelect.addEventListener('change', function() {
+                const newMode = this.value;
+                handleModeChange(widget, newMode);
+            });
+        }
 
         // Setup placeholder keyboard navigation
         const visualBuilder = widget.visualBuilder;
@@ -1845,6 +2087,11 @@
     window.applyBoldFormat = applyBoldFormat;
     window.applyColorFormat = applyColorFormat;
     window.applySizeFormat = applySizeFormat;
+    
+    // Expose mode switching functions globally
+    window.handleModeChange = handleModeChange;
+    window.getModeConfig = getModeConfig;
+    window.updateToolbarVisibility = updateToolbarVisibility;
 
     /**
      * Initialize a math input widget instance.

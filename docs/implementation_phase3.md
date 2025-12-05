@@ -146,7 +146,7 @@ Phase 3 implements the user interface features: Quick Insert dropdown, text form
 
 ---
 
-### Task 12: Mode Switching UI
+### ✅Task 12: Mode Switching UI
 **Owner:** UI Dev  
 **Duration:** 2 days  
 **Dependencies:** Task 5, Task 7
@@ -199,6 +199,13 @@ Phase 3 implements the user interface features: Quick Insert dropdown, text form
 - Mode switching logic
 - Toolbar visibility updates
 - Warning system for incompatible operations
+
+**Features:**
+- Mode switching: Dropdown to change input modes
+- Toolbar visibility: Automatically shows/hides toolbars based on mode
+- Formula preservation: Current formula is preserved when switching modes
+- Warning system: Alerts users about incompatible operations
+- Dynamic updates: Toolbars update immediately on mode change
 
 ---
 

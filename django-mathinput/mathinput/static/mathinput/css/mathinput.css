@@ -24,6 +24,47 @@
     background: #f5f5f5;
 }
 
+/* Mode Selector */
+.mi-mode-selector {
+    padding: 8px 16px;
+    border-bottom: 1px solid #ddd;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mi-mode-selector-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.mi-mode-select {
+    flex: 1;
+    max-width: 300px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mi-mode-select:hover {
+    border-color: #bbb;
+}
+
+.mi-mode-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 .mi-tab {
     padding: 8px 16px;
     border: none;

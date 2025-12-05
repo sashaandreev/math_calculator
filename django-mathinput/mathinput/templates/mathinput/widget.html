@@ -25,6 +25,21 @@
         </button>
     </div>
     
+    {# Mode Selector #}
+    <div class="mi-mode-selector">
+        <label for="{{ widget_id }}-mode-select" class="mi-mode-selector-label">Input Mode:</label>
+        <select id="{{ widget_id }}-mode-select" 
+                class="mi-mode-select"
+                aria-label="Select input mode">
+            <option value="regular_functions" {% if mode == "regular_functions" %}selected{% endif %}>Regular Functions</option>
+            <option value="advanced_expressions" {% if mode == "advanced_expressions" %}selected{% endif %}>Advanced Expressions</option>
+            <option value="integrals_differentials" {% if mode == "integrals_differentials" %}selected{% endif %}>Integrals/Differentials</option>
+            <option value="matrices" {% if mode == "matrices" %}selected{% endif %}>Matrices</option>
+            <option value="statistics_probability" {% if mode == "statistics_probability" %}selected{% endif %}>Statistics & Probability</option>
+            <option value="physics_engineering" {% if mode == "physics_engineering" %}selected{% endif %}>Physics & Engineering</option>
+        </select>
+    </div>
+    
     {# Quick Insert Dropdown #}
     {% include "mathinput/quick_insert.html" with widget_id=widget_id %}
     
