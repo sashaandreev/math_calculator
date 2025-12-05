@@ -9,10 +9,11 @@ Provides buttons for text formatting operations:
 {% endcomment %}
 <div class="mi-toolbar mi-toolbar-text" role="toolbar" aria-label="Text formatting">
     {# Text formatting buttons #}
+    {# Bold button - can be used as format (wraps selection) or insert (inserts template) #}
     <button type="button"
             class="mi-button mi-button-bold"
-            data-action="insert"
-            data-template="\\mathbf{}"
+            data-action="format"
+            data-format="bold"
             aria-label="Bold text"
             title="Bold (Ctrl+B)">
         <strong>B</strong>
@@ -66,33 +67,98 @@ Provides buttons for text formatting operations:
     {# Separator #}
     <span class="mi-toolbar-separator" aria-hidden="true"></span>
     
-    {# Size buttons #}
-    <button type="button"
-            class="mi-button mi-button-large"
-            data-action="insert"
-            data-template="\\large{}"
-            aria-label="Large text"
-            title="Large text">
-        Large
-    </button>
-    
-    <button type="button"
-            class="mi-button mi-button-small"
-            data-action="insert"
-            data-template="\\small{}"
-            aria-label="Small text"
-            title="Small text">
-        Small
-    </button>
+    {# Size formatting button with dropdown #}
+    <div class="mi-size-selector" style="position: relative; display: inline-block;">
+        <button type="button"
+                class="mi-button mi-button-size"
+                data-action="format"
+                data-format="size"
+                aria-label="Text size"
+                aria-haspopup="true"
+                aria-expanded="false"
+                title="Text size">
+            Size <span class="mi-size-arrow">▼</span>
+        </button>
+        <ul class="mi-size-menu" role="menu" hidden>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="tiny" data-template="\\tiny{}">Tiny</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="scriptsize" data-template="\\scriptsize{}">Script Size</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="footnotesize" data-template="\\footnotesize{}">Footnote Size</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="small" data-template="\\small{}">Small</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="normal" data-template="">Normal</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="large" data-template="\\large{}">Large</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="Large" data-template="\\Large{}">Larger</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="LARGE" data-template="\\LARGE{}">Largest</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="huge" data-template="\\huge{}">Huge</button>
+            </li>
+            <li role="menuitem">
+                <button type="button" class="mi-size-item" data-size="Huge" data-template="\\Huge{}">Huger</button>
+            </li>
+        </ul>
+    </div>
     
     {# Separator #}
     <span class="mi-toolbar-separator" aria-hidden="true"></span>
     
-    {# Color buttons #}
+    {# Color formatting button with picker #}
+    <div class="mi-color-selector" style="position: relative; display: inline-block;">
+        <button type="button"
+                class="mi-button mi-button-color"
+                data-action="format"
+                data-format="color"
+                aria-label="Text color"
+                aria-haspopup="true"
+                aria-expanded="false"
+                title="Text color">
+            <span class="mi-color-icon" style="color: #000;">A</span>
+        </button>
+        <div class="mi-color-picker" hidden>
+            <div class="mi-color-picker-header">Select Color</div>
+            <div class="mi-color-palette">
+                {# Common colors #}
+                <button type="button" class="mi-color-item" data-color="black" style="background-color: #000000;" title="Black"></button>
+                <button type="button" class="mi-color-item" data-color="red" style="background-color: #ff0000;" title="Red"></button>
+                <button type="button" class="mi-color-item" data-color="blue" style="background-color: #0000ff;" title="Blue"></button>
+                <button type="button" class="mi-color-item" data-color="green" style="background-color: #008000;" title="Green"></button>
+                <button type="button" class="mi-color-item" data-color="yellow" style="background-color: #ffff00;" title="Yellow"></button>
+                <button type="button" class="mi-color-item" data-color="orange" style="background-color: #ffa500;" title="Orange"></button>
+                <button type="button" class="mi-color-item" data-color="purple" style="background-color: #800080;" title="Purple"></button>
+                <button type="button" class="mi-color-item" data-color="pink" style="background-color: #ffc0cb;" title="Pink"></button>
+                <button type="button" class="mi-color-item" data-color="brown" style="background-color: #a52a2a;" title="Brown"></button>
+                <button type="button" class="mi-color-item" data-color="gray" style="background-color: #808080;" title="Gray"></button>
+                <button type="button" class="mi-color-item" data-color="cyan" style="background-color: #00ffff;" title="Cyan"></button>
+                <button type="button" class="mi-color-item" data-color="magenta" style="background-color: #ff00ff;" title="Magenta"></button>
+            </div>
+            <div class="mi-color-custom">
+                <label for="mi-color-input">Custom:</label>
+                <input type="color" id="mi-color-input" class="mi-color-input" value="#000000">
+                <button type="button" class="mi-color-apply">Apply</button>
+            </div>
+        </div>
+    </div>
+    
+    {# Quick color buttons for common colors #}
     <button type="button"
             class="mi-button mi-button-color-red"
-            data-action="insert"
-            data-template="\\textcolor{red}{}"
+            data-action="format"
+            data-format="color"
+            data-color="red"
             aria-label="Red text"
             title="Red text">
         <span style="color: red;">A</span>
@@ -100,8 +166,9 @@ Provides buttons for text formatting operations:
     
     <button type="button"
             class="mi-button mi-button-color-blue"
-            data-action="insert"
-            data-template="\\textcolor{blue}{}"
+            data-action="format"
+            data-format="color"
+            data-color="blue"
             aria-label="Blue text"
             title="Blue text">
         <span style="color: blue;">A</span>
@@ -109,8 +176,9 @@ Provides buttons for text formatting operations:
     
     <button type="button"
             class="mi-button mi-button-color-green"
-            data-action="insert"
-            data-template="\\textcolor{green}{}"
+            data-action="format"
+            data-format="color"
+            data-color="green"
             aria-label="Green text"
             title="Green text">
         <span style="color: green;">A</span>

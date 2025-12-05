@@ -1023,6 +1023,333 @@
     // Event Listeners Setup
     // ============================================================================
 
+    // ============================================================================
+    // Text Formatting Handlers
+    // ============================================================================
+
+    /**
+     * Handle format button click (bold, color, size).
+     * 
+     * @param {HTMLElement} buttonElement - The format button element
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function handleFormatButton(buttonElement, widget) {
+        const formatType = buttonElement.dataset.format;
+        if (!formatType) {
+            return;
+        }
+
+        const visualBuilder = widget.visualBuilder;
+        if (!visualBuilder) {
+            console.warn('Visual builder not initialized');
+            return;
+        }
+
+        // For now, we'll apply formatting to the next placeholder
+        // In a full implementation, we'd check for text selection first
+        const cursorManager = widget.cursorManager || new CursorManager(widget);
+        widget.cursorManager = cursorManager;
+        const cursor = cursorManager.getCursorPosition();
+
+        // Apply format based on type
+        switch (formatType) {
+            case 'bold':
+                applyBoldFormat(cursor, widget);
+                break;
+            case 'color':
+                const color = buttonElement.dataset.color;
+                if (color) {
+                    // Quick color button clicked
+                    applyColorFormat(cursor, widget, color);
+                } else {
+                    // Color picker button clicked - show picker
+                    showColorPicker(buttonElement, cursor, widget);
+                }
+                break;
+            case 'size':
+                // Size button clicked - show size menu
+                showSizePicker(buttonElement, cursor, widget);
+                break;
+        }
+    }
+
+    /**
+     * Apply bold formatting.
+     * 
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function applyBoldFormat(cursor, widget) {
+        const template = '\\textbf{}';
+        const newNode = createNodeFromTemplate(template);
+        
+        if (!newNode) {
+            return;
+        }
+
+        insertNode(cursor, newNode);
+        updateWidgetAfterInsert(widget);
+    }
+
+    /**
+     * Apply color formatting.
+     * 
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} color - Color name or hex code
+     */
+    function applyColorFormat(cursor, widget, color) {
+        const template = `\\textcolor{${color}}{}`;
+        const newNode = createNodeFromTemplate(template);
+        
+        if (!newNode) {
+            return;
+        }
+
+        insertNode(cursor, newNode);
+        updateWidgetAfterInsert(widget);
+    }
+
+    /**
+     * Apply size formatting.
+     * 
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} sizeTemplate - LaTeX size command template
+     */
+    function applySizeFormat(cursor, widget, sizeTemplate) {
+        if (!sizeTemplate) {
+            // Normal size - no formatting needed
+            return;
+        }
+
+        const template = sizeTemplate;
+        const newNode = createNodeFromTemplate(template);
+        
+        if (!newNode) {
+            return;
+        }
+
+        insertNode(cursor, newNode);
+        updateWidgetAfterInsert(widget);
+    }
+
+    /**
+     * Show color picker dropdown.
+     * 
+     * @param {HTMLElement} buttonElement - Color button element
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function showColorPicker(buttonElement, cursor, widget) {
+        const colorSelector = buttonElement.closest('.mi-color-selector');
+        if (!colorSelector) {
+            return;
+        }
+
+        const picker = colorSelector.querySelector('.mi-color-picker');
+        const isOpen = !picker.hidden;
+
+        // Close all other pickers
+        widget.querySelectorAll('.mi-color-picker, .mi-size-menu').forEach(el => {
+            el.hidden = true;
+        });
+        widget.querySelectorAll('[aria-expanded="true"]').forEach(el => {
+            el.setAttribute('aria-expanded', 'false');
+        });
+
+        if (isOpen) {
+            picker.hidden = true;
+            buttonElement.setAttribute('aria-expanded', 'false');
+        } else {
+            picker.hidden = false;
+            buttonElement.setAttribute('aria-expanded', 'true');
+
+            // Setup color picker event listeners
+            setupColorPickerListeners(picker, cursor, widget, buttonElement);
+        }
+    }
+
+    /**
+     * Setup color picker event listeners.
+     * 
+     * @param {HTMLElement} picker - Color picker element
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     * @param {HTMLElement} buttonElement - Color button element
+     */
+    function setupColorPickerListeners(picker, cursor, widget, buttonElement) {
+        // Remove existing listeners to avoid duplicates
+        const newPicker = picker.cloneNode(true);
+        picker.parentNode.replaceChild(newPicker, picker);
+
+        // Color palette items
+        newPicker.querySelectorAll('.mi-color-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const color = this.dataset.color;
+                applyColorFormat(cursor, widget, color);
+                newPicker.hidden = true;
+                buttonElement.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Custom color input
+        const colorInput = newPicker.querySelector('.mi-color-input');
+        const applyButton = newPicker.querySelector('.mi-color-apply');
+        
+        if (applyButton && colorInput) {
+            applyButton.addEventListener('click', function() {
+                const hexColor = colorInput.value;
+                // Convert hex to color name if possible, or use hex
+                const colorName = hexToColorName(hexColor) || hexColor;
+                applyColorFormat(cursor, widget, colorName);
+                newPicker.hidden = true;
+                buttonElement.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        // Close on outside click
+        setTimeout(() => {
+            document.addEventListener('click', function closePicker(e) {
+                if (!newPicker.contains(e.target) && !buttonElement.contains(e.target)) {
+                    newPicker.hidden = true;
+                    buttonElement.setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('click', closePicker);
+                }
+            });
+        }, 0);
+    }
+
+    /**
+     * Show size picker dropdown.
+     * 
+     * @param {HTMLElement} buttonElement - Size button element
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function showSizePicker(buttonElement, cursor, widget) {
+        const sizeSelector = buttonElement.closest('.mi-size-selector');
+        if (!sizeSelector) {
+            return;
+        }
+
+        const menu = sizeSelector.querySelector('.mi-size-menu');
+        const isOpen = !menu.hidden;
+
+        // Close all other pickers
+        widget.querySelectorAll('.mi-color-picker, .mi-size-menu').forEach(el => {
+            el.hidden = true;
+        });
+        widget.querySelectorAll('[aria-expanded="true"]').forEach(el => {
+            el.setAttribute('aria-expanded', 'false');
+        });
+
+        if (isOpen) {
+            menu.hidden = true;
+            buttonElement.setAttribute('aria-expanded', 'false');
+        } else {
+            menu.hidden = false;
+            buttonElement.setAttribute('aria-expanded', 'true');
+
+            // Setup size menu event listeners
+            setupSizeMenuListeners(menu, cursor, widget, buttonElement);
+        }
+    }
+
+    /**
+     * Setup size menu event listeners.
+     * 
+     * @param {HTMLElement} menu - Size menu element
+     * @param {Object} cursor - Cursor position object
+     * @param {HTMLElement} widget - Widget container element
+     * @param {HTMLElement} buttonElement - Size button element
+     */
+    function setupSizeMenuListeners(menu, cursor, widget, buttonElement) {
+        menu.querySelectorAll('.mi-size-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const template = this.dataset.template;
+                applySizeFormat(cursor, widget, template);
+                menu.hidden = true;
+                buttonElement.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Close on outside click
+        setTimeout(() => {
+            document.addEventListener('click', function closeMenu(e) {
+                if (!menu.contains(e.target) && !buttonElement.contains(e.target)) {
+                    menu.hidden = true;
+                    buttonElement.setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }, 0);
+    }
+
+    /**
+     * Convert hex color to color name if it's a standard color.
+     * 
+     * @param {string} hex - Hex color code (e.g., "#ff0000")
+     * @returns {string|null} Color name or null
+     */
+    function hexToColorName(hex) {
+        const colorMap = {
+            '#000000': 'black',
+            '#ffffff': 'white',
+            '#ff0000': 'red',
+            '#00ff00': 'green',
+            '#0000ff': 'blue',
+            '#ffff00': 'yellow',
+            '#ffa500': 'orange',
+            '#800080': 'purple',
+            '#ffc0cb': 'pink',
+            '#a52a2a': 'brown',
+            '#808080': 'gray',
+            '#00ffff': 'cyan',
+            '#ff00ff': 'magenta',
+        };
+        return colorMap[hex.toLowerCase()] || null;
+    }
+
+    /**
+     * Update widget after inserting a node (render, preview, sync).
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function updateWidgetAfterInsert(widget) {
+        const visualBuilder = widget.visualBuilder;
+        if (!visualBuilder) {
+            return;
+        }
+
+        // Render visual builder
+        visualBuilder.render();
+
+        // Get updated LaTeX
+        const latex = visualBuilder.getLatex();
+
+        // Update hidden field
+        updateHiddenField(widget, latex);
+
+        // Sync source mode
+        syncSourceMode(widget, latex);
+
+        // Render preview (debounced)
+        const previewContainer = widget.querySelector('.mi-preview');
+        if (previewContainer) {
+            debouncedRenderPreview(latex, previewContainer);
+        }
+
+        // Move cursor to first placeholder
+        const cursorManager = widget.cursorManager;
+        if (cursorManager && visualBuilder.placeholderManager) {
+            const placeholders = visualBuilder.placeholderManager.placeholders;
+            if (placeholders.length > 0) {
+                cursorManager.setCursor(placeholders[0]);
+            }
+        }
+    }
+
     /**
      * Setup event listeners for a widget.
      * 
@@ -1031,12 +1358,21 @@
     function setupEventListeners(widget) {
         if (!widget) return;
 
-        // Setup toolbar button click handlers
+        // Setup toolbar button click handlers for insert actions
         const toolbarButtons = widget.querySelectorAll('.mi-button[data-action="insert"]');
         toolbarButtons.forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 handleButtonClick(this, widget);
+            });
+        });
+
+        // Setup format button click handlers
+        const formatButtons = widget.querySelectorAll('.mi-button[data-action="format"]');
+        formatButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                handleFormatButton(this, widget);
             });
         });
 
@@ -1503,6 +1839,12 @@
     // Expose QuickInsertManager and initializeQuickInsert globally
     window.QuickInsertManager = QuickInsertManager;
     window.initializeQuickInsert = initializeQuickInsert;
+    
+    // Expose formatting functions globally
+    window.handleFormatButton = handleFormatButton;
+    window.applyBoldFormat = applyBoldFormat;
+    window.applyColorFormat = applyColorFormat;
+    window.applySizeFormat = applySizeFormat;
 
     /**
      * Initialize a math input widget instance.

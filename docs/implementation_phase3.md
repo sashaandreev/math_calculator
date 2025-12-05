@@ -66,10 +66,18 @@ Phase 3 implements the user interface features: Quick Insert dropdown, text form
 
 ---
 
-### Task 11: Text Formatting (Bold, Color, Size)
+### ✅Task 11: Text Formatting (Bold, Color, Size)
 **Owner:** UI/JS Dev  
 **Duration:** 3 days  
 **Dependencies:** Task 7, Task 9
+
+**Features:**
+- Bold formatting: Wraps next input in \textbf{}
+- Color formatting: Wraps next input in \textcolor{color}{}
+- Size formatting: Wraps next input in size commands
+- Quick color buttons: One-click color application
+- Custom colors: Hex color picker support
+- Dropdown menus: Color picker and size menu with auto-close
 
 **Implementation:**
 - Text formatting buttons in `toolbar_text.html`:
