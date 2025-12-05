@@ -1803,6 +1803,9 @@
             }
         });
 
+        // Setup comprehensive keyboard navigation
+        setupKeyboardNavigation(widget);
+
         // Setup placeholder keyboard navigation
         const visualBuilder = widget.visualBuilder;
         if (visualBuilder) {
@@ -2286,6 +2289,229 @@
     window.initializeMobileFeatures = initializeMobileFeatures;
     window.initializeCollapsiblePreview = initializeCollapsiblePreview;
     window.initializeSwipeGestures = initializeSwipeGestures;
+
+    // ============================================================================
+    // Accessibility: Keyboard Navigation
+    // ============================================================================
+
+    /**
+     * Setup comprehensive keyboard navigation for the widget.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function setupKeyboardNavigation(widget) {
+        // Tab navigation through toolbar buttons
+        const toolbarContainer = widget.querySelector('.mi-toolbar-container');
+        if (toolbarContainer) {
+            const buttons = toolbarContainer.querySelectorAll('.mi-button, .mi-toolbar-button');
+            
+            buttons.forEach((button, index) => {
+                // Make buttons keyboard accessible
+                button.setAttribute('tabindex', '0');
+                
+                // Enter/Space to activate button
+                button.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        button.click();
+                    }
+                });
+            });
+        }
+
+        // Arrow key navigation in visual builder
+        const visualBuilder = widget.querySelector('.mi-visual-builder');
+        if (visualBuilder && widget.visualBuilder) {
+            visualBuilder.addEventListener('keydown', function(e) {
+                handleVisualBuilderKeyboard(e, widget);
+            });
+        }
+
+        // Tab navigation between placeholders (already implemented, but ensure it's active)
+        ensurePlaceholderKeyboardNavigation(widget);
+    }
+
+    /**
+     * Handle keyboard navigation in visual builder.
+     * 
+     * @param {KeyboardEvent} e - Keyboard event
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function handleVisualBuilderKeyboard(e, widget) {
+        const visualBuilder = widget.visualBuilder;
+        const cursorManager = widget.cursorManager;
+        
+        if (!visualBuilder || !cursorManager) {
+            return;
+        }
+
+        const placeholders = visualBuilder.placeholderManager ? visualBuilder.placeholderManager.placeholders : [];
+
+        switch (e.key) {
+            case 'ArrowLeft':
+                e.preventDefault();
+                navigatePlaceholders(widget, -1);
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                navigatePlaceholders(widget, 1);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                // Move to previous placeholder or first placeholder
+                if (placeholders.length > 0) {
+                    const currentIndex = getCurrentPlaceholderIndex(widget);
+                    const targetIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+                    if (placeholders[targetIndex]) {
+                        cursorManager.setCursor(placeholders[targetIndex]);
+                        placeholders[targetIndex].focus();
+                    }
+                }
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                // Move to next placeholder or last placeholder
+                if (placeholders.length > 0) {
+                    const currentIndex = getCurrentPlaceholderIndex(widget);
+                    const targetIndex = currentIndex < placeholders.length - 1 ? currentIndex + 1 : placeholders.length - 1;
+                    if (placeholders[targetIndex]) {
+                        cursorManager.setCursor(placeholders[targetIndex]);
+                        placeholders[targetIndex].focus();
+                    }
+                }
+                break;
+            case 'Home':
+                e.preventDefault();
+                // Move to first placeholder
+                if (placeholders.length > 0) {
+                    cursorManager.setCursor(placeholders[0]);
+                    placeholders[0].focus();
+                }
+                break;
+            case 'End':
+                e.preventDefault();
+                // Move to last placeholder
+                if (placeholders.length > 0) {
+                    const lastIndex = placeholders.length - 1;
+                    cursorManager.setCursor(placeholders[lastIndex]);
+                    placeholders[lastIndex].focus();
+                }
+                break;
+        }
+    }
+
+    /**
+     * Navigate between placeholders using arrow keys.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {number} direction - Direction to navigate (-1 for left, 1 for right)
+     */
+    function navigatePlaceholders(widget, direction) {
+        const visualBuilder = widget.visualBuilder;
+        const cursorManager = widget.cursorManager;
+        
+        if (!visualBuilder || !cursorManager) {
+            return;
+        }
+
+        const placeholders = visualBuilder.placeholderManager ? visualBuilder.placeholderManager.placeholders : [];
+        
+        if (placeholders.length === 0) {
+            return;
+        }
+
+        const currentIndex = getCurrentPlaceholderIndex(widget);
+        const targetIndex = currentIndex + direction;
+
+        if (targetIndex >= 0 && targetIndex < placeholders.length) {
+            cursorManager.setCursor(placeholders[targetIndex]);
+            placeholders[targetIndex].focus();
+        }
+    }
+
+    /**
+     * Get current placeholder index.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @returns {number} Current placeholder index, or -1 if none
+     */
+    function getCurrentPlaceholderIndex(widget) {
+        const visualBuilder = widget.visualBuilder;
+        if (!visualBuilder || !visualBuilder.placeholderManager) {
+            return -1;
+        }
+
+        const placeholders = visualBuilder.placeholderManager.placeholders;
+        const activeElement = document.activeElement;
+
+        for (let i = 0; i < placeholders.length; i++) {
+            if (placeholders[i] === activeElement || placeholders[i].contains(activeElement)) {
+                return i;
+            }
+        }
+
+        return 0; // Default to first placeholder
+    }
+
+    /**
+     * Ensure placeholder keyboard navigation is set up.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     */
+    function ensurePlaceholderKeyboardNavigation(widget) {
+        // This is already implemented in setupEventListeners, but we ensure it's active
+        const visualBuilder = widget.querySelector('.mi-visual-builder');
+        if (!visualBuilder) {
+            return;
+        }
+
+        // Make visual builder focusable
+        visualBuilder.setAttribute('tabindex', '0');
+        
+        // Ensure placeholders are keyboard accessible
+        visualBuilder.addEventListener('focus', function() {
+            const placeholders = visualBuilder.querySelectorAll('.mi-placeholder');
+            placeholders.forEach(placeholder => {
+                placeholder.setAttribute('tabindex', '0');
+            });
+        });
+    }
+
+    /**
+     * Announce to screen readers.
+     * 
+     * @param {HTMLElement} widget - Widget container element
+     * @param {string} message - Message to announce
+     * @param {string} priority - 'polite' or 'assertive'
+     */
+    function announceToScreenReader(widget, message, priority = 'polite') {
+        // Use existing preview aria-live region or create one
+        let liveRegion = widget.querySelector('.mi-preview[aria-live]');
+        
+        if (!liveRegion) {
+            // Create a hidden live region if preview doesn't exist
+            liveRegion = document.createElement('div');
+            liveRegion.className = 'mi-screen-reader-announce';
+            liveRegion.setAttribute('role', 'status');
+            liveRegion.setAttribute('aria-live', priority);
+            liveRegion.setAttribute('aria-atomic', 'true');
+            liveRegion.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+            widget.appendChild(liveRegion);
+        }
+
+        // Update live region to trigger announcement
+        liveRegion.setAttribute('aria-live', priority);
+        liveRegion.textContent = message;
+        
+        // Clear after announcement
+        setTimeout(() => {
+            liveRegion.textContent = '';
+        }, 1000);
+    }
+
+    // Expose accessibility functions globally
+    window.setupKeyboardNavigation = setupKeyboardNavigation;
+    window.announceToScreenReader = announceToScreenReader;
 
     // ============================================================================
     // Mobile Responsive Features

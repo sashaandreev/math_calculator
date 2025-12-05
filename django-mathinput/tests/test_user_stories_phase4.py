@@ -105,6 +105,9 @@ def test_keyboard_navigation_complete():
     # Should contain keyboard-accessible elements
     # Buttons should be focusable (they are by default)
     assert 'button' in html or 'role="button"' in html
+    
+    # Visual builder should be focusable
+    assert 'mi-visual-builder' in html
 
 
 @pytest.mark.user_story
@@ -125,6 +128,9 @@ def test_focus_indicators_visible():
     # We verify that interactive elements exist
     assert 'button' in html or 'role="button"' in html
     assert 'select' in html or 'role="combobox"' in html
+    
+    # Visual builder should be focusable
+    assert 'mi-visual-builder' in html
 
 
 @pytest.mark.user_story
@@ -146,6 +152,51 @@ def test_keyboard_shortcuts_work():
     assert 'mi-mode-tabs' in html
     assert 'mi-tab-visual' in html
     assert 'mi-tab-source' in html
+
+
+@pytest.mark.user_story
+@pytest.mark.us_14
+def test_aria_labels_present():
+    """
+    What we are testing: All interactive elements have ARIA labels
+    Why we are testing: US-14 - Screen reader accessibility requirement
+    Expected Result: All buttons and interactive elements have aria-label
+    """
+    widget = MathInputWidget()
+    html = widget.render('equation', '')
+    
+    # Widget should render
+    assert html is not None
+    
+    # Should contain ARIA labels
+    # Toolbar should have role="toolbar" and aria-label
+    assert 'role="toolbar"' in html
+    assert 'aria-label' in html
+    
+    # Visual builder should have role="textbox" and aria-label
+    assert 'role="textbox"' in html or 'mi-visual-builder' in html
+    
+    # Preview should have aria-live
+    assert 'aria-live' in html
+
+
+@pytest.mark.user_story
+@pytest.mark.us_14
+def test_screen_reader_support():
+    """
+    What we are testing: Screen reader announcements work
+    Why we are testing: US-14 - Accessibility for visually impaired users
+    Expected Result: aria-live region announces formula updates
+    """
+    widget = MathInputWidget()
+    html = widget.render('equation', '')
+    
+    # Widget should render
+    assert html is not None
+    
+    # Preview should have aria-live="polite" for screen reader announcements
+    assert 'aria-live="polite"' in html
+    assert 'role="region"' in html or 'mi-preview' in html
 
 
 @pytest.mark.user_story

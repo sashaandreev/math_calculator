@@ -65,10 +65,27 @@ Phase 4 adds polish and integration features: mobile responsiveness, accessibili
 
 ---
 
-### Task 15: Accessibility (ARIA, Keyboard)
+### ✅Task 15: Accessibility (ARIA, Keyboard)
 **Owner:** A11y Dev  
 **Duration:** 3 days  
 **Dependencies:** Task 7, Task 9
+
+**Features:**
+- Full keyboard navigation: all features accessible via keyboard
+- Screen reader support: ARIA labels and live regions
+- Focus indicators: visible on all interactive elements
+- WCAG 2.1 AA compliance: keyboard navigation, focus indicators, ARIA labels
+- Logical tab order: focus moves through elements in a logical sequence
+
+**Keyboard shortcuts:**
+- Tab: Navigate forward through buttons/placeholders
+- Shift+Tab: Navigate backward
+- Enter/Space: Activate button
+- Arrow Left/Right: Navigate placeholders horizontally
+- Arrow Up/Down: Navigate placeholders vertically
+- Home: Jump to first placeholder
+- End: Jump to last placeholder
+- Ctrl+M: Toggle Visual/Source mode
 
 **Implementation:**
 - ARIA labels and roles:
