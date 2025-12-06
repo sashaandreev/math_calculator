@@ -137,7 +137,7 @@ Phase 6 prepares the package for PyPI release: package preparation, release cand
 
 ---
 
-## Phase 6 Testing Requirements
+## ✅Phase 6 Testing Requirements
 
 ### Release Testing
 

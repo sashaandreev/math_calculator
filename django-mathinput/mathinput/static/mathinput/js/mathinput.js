@@ -284,7 +284,15 @@
             }
             // Parse radicand content (may contain nested commands or simple values)
             const radicandContent = radicandResult.content || '';
-            const radicand = radicandContent ? parseExpression(radicandContent) : createPlaceholder('radicand');
+            let radicand;
+            try {
+                // Always call parseExpression, even for empty content (it will return a placeholder)
+                // This matches the behavior of fraction handling for consistency
+                radicand = parseExpression(radicandContent);
+            } catch (e) {
+                console.warn('Error parsing radicand:', e, 'content:', radicandContent);
+                radicand = createPlaceholder(radicandContent || 'radicand');
+            }
             const remainder = trimmed.substring(radicandResult.endPos);
             
             const rootNode = new ASTNode(NodeTypes.ROOT, 'sqrt', [radicand]);
