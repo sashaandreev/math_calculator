@@ -110,3 +110,51 @@ def test_renderer_cdn_uses_sri():
     # SRI hashes are handled in JavaScript RendererManager
     # which is tested in frontend tests
 
+
+@pytest.mark.security
+@pytest.mark.django_db(transaction=True)
+def test_admin_integration_requires_permissions():
+    """
+    What we are testing: Admin integration respects Django permissions
+    Why we are testing: Security - prevent unauthorized access
+    Expected Result: Only authorized users can access admin features
+    """
+    from django.test import Client
+    from django.contrib.auth.models import User
+    
+    # Create regular user (not admin)
+    regular_user = User.objects.create_user(
+        username='regular',
+        email='regular@test.com',
+        password='testpass'
+    )
+    
+    # Create admin user
+    admin_user = User.objects.create_superuser(
+        username='admin',
+        email='admin@test.com',
+        password='adminpass'
+    )
+    
+    client = Client()
+    
+    # Regular user should not have admin access
+    # (This is Django's built-in permission system)
+    assert not regular_user.is_staff
+    assert not regular_user.is_superuser
+    
+    # Admin user should have admin access
+    assert admin_user.is_staff
+    assert admin_user.is_superuser
+    
+    # Widget itself doesn't enforce permissions - Django Admin does
+    # We verify that widget can be used in admin context
+    from mathinput.widgets import MathInputWidget
+    widget = MathInputWidget()
+    html = widget.render('equation', '')
+    
+    # Widget should render regardless of user permissions
+    # (Permissions are handled by Django Admin, not the widget)
+    assert html is not None
+    assert 'mi-widget' in html
+

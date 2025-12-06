@@ -57,10 +57,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'tests.wsgi.application'
 
 # Database
+# Use in-memory database for tests to avoid file system issues
+# when running from different directories
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': ':memory:',
     }
 }
 

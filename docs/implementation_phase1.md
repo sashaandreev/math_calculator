@@ -678,7 +678,7 @@ def test_validation_shows_clear_error_messages():
 - [ ] Verify CSS and JS files collected
 - [ ] Check static files directory structure
 - **Expected Result:** All static files collected correctly
-
+[.venv](../.venv)
 ### Widget Rendering Testing
 
 **Test 1.4: Basic Widget Rendering**

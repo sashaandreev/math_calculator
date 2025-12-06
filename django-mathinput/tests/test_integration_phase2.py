@@ -12,7 +12,7 @@ from mathinput.modes import load_mode, VALID_MODES
 from mathinput.presets import load_preset, VALID_PRESETS
 
 
-class TestForm(forms.Form):
+class MathForm(forms.Form):
     """Test form with MathInputWidget."""
     equation = forms.CharField(widget=MathInputWidget(), required=False)
 

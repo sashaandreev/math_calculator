@@ -11,7 +11,7 @@ from mathinput.modes import load_mode
 from mathinput.presets import load_preset
 
 
-class TestForm(forms.Form):
+class MathForm(forms.Form):
     """Test form with MathInputWidget."""
     equation = forms.CharField(widget=MathInputWidget(), required=False)
 
@@ -97,7 +97,7 @@ def test_fraction_button_inserts_template():
 @pytest.mark.user_story
 @pytest.mark.us_02  # US-02: Insert Integral
 def test_integral_button_inserts_template():
-    """
+    r"""
     What we are testing: Integral button inserts integral template
     Why we are testing: US-02 - Core user story for inserting integrals
     Expected Result: Clicking integral button inserts \int_{}^{} template
