@@ -148,22 +148,116 @@
     }
 
     /**
+     * Extract balanced brace content from LaTeX string.
+     * Handles nested braces correctly.
+     * 
+     * @param {string} str - String starting with '{'
+     * @param {number} startPos - Starting position (should be position of '{')
+     * @returns {Object} {content: string, endPos: number} or null if not found
+     */
+    function extractBracedContent(str, startPos = 0) {
+        if (startPos >= str.length || str[startPos] !== '{') {
+            return null;
+        }
+        
+        let depth = 0;
+        let pos = startPos;
+        
+        while (pos < str.length) {
+            if (str[pos] === '{') {
+                depth++;
+            } else if (str[pos] === '}') {
+                depth--;
+                if (depth === 0) {
+                    // Found matching closing brace
+                    const content = str.substring(startPos + 1, pos);
+                    return { content: content, endPos: pos + 1 };
+                }
+            }
+            pos++;
+        }
+        
+        // No matching closing brace found
+        return null;
+    }
+
+    /**
      * Parse a LaTeX expression.
      * 
      * @param {string} latex - LaTeX string
      * @returns {ASTNode} Parsed AST node
      */
     function parseExpression(latex) {
+        // Trim whitespace for matching
+        const trimmed = latex.trim();
+        
+        // Handle empty string - return placeholder
+        if (trimmed === '') {
+            return createPlaceholder('');
+        }
+        
         // Handle fractions: \frac{}{}
-        const fracMatch = latex.match(/^\\frac\{([^}]*)\}\{([^}]*)\}(.*)$/);
-        if (fracMatch) {
-            const numerator = parseExpression(fracMatch[1] || '');
-            const denominator = parseExpression(fracMatch[2] || '');
-            const remainder = fracMatch[3] || '';
+        // Check for \frac pattern first (before other patterns that might match)
+        // Use indexOf to be more explicit about matching
+        const fracIndex = trimmed.indexOf('\\frac');
+        if (fracIndex === 0) {
+            let pos = 5; // Length of '\frac' (backslash + 'frac')
             
+            // Skip whitespace after \frac
+            while (pos < trimmed.length && /\s/.test(trimmed[pos])) {
+                pos++;
+            }
+            
+            // Extract numerator
+            if (pos >= trimmed.length || trimmed[pos] !== '{') {
+                return createPlaceholder(latex);
+            }
+            const numResult = extractBracedContent(trimmed, pos);
+            if (!numResult) {
+                // Invalid fraction syntax, try to continue
+                return createPlaceholder(latex);
+            }
+            // Parse numerator content (may contain nested commands)
+            const numeratorContent = numResult.content || '';
+            let numerator;
+            try {
+                // Always call parseExpression, even for empty content (it will return a placeholder)
+                numerator = parseExpression(numeratorContent);
+            } catch (e) {
+                console.warn('Error parsing numerator:', e, 'content:', numeratorContent);
+                numerator = createPlaceholder(numeratorContent || 'numerator');
+            }
+            pos = numResult.endPos;
+            
+            // Skip whitespace before denominator
+            while (pos < trimmed.length && /\s/.test(trimmed[pos])) {
+                pos++;
+            }
+            
+            // Extract denominator
+            if (pos >= trimmed.length || trimmed[pos] !== '{') {
+                return createPlaceholder(latex);
+            }
+            const denResult = extractBracedContent(trimmed, pos);
+            if (!denResult) {
+                return createPlaceholder(latex);
+            }
+            // Parse denominator content (may contain nested commands)
+            const denominatorContent = denResult.content || '';
+            let denominator;
+            try {
+                // Always call parseExpression, even for empty content (it will return a placeholder)
+                denominator = parseExpression(denominatorContent);
+            } catch (e) {
+                console.warn('Error parsing denominator:', e, 'content:', denominatorContent);
+                denominator = createPlaceholder(denominatorContent || 'denominator');
+            }
+            pos = denResult.endPos;
+            
+            const remainder = trimmed.substring(pos);
             const fractionNode = new ASTNode(NodeTypes.FRACTION, 'frac', [numerator, denominator]);
             
-            if (remainder) {
+            if (remainder.trim()) {
                 // Create expression node for remainder
                 const remainderNode = parseExpression(remainder);
                 return new ASTNode(NodeTypes.EXPRESSION, '+', [fractionNode, remainderNode]);
@@ -172,14 +266,30 @@
         }
 
         // Handle square root: \sqrt{}
-        const sqrtMatch = latex.match(/^\\sqrt\{([^}]*)\}(.*)$/);
-        if (sqrtMatch) {
-            const radicand = parseExpression(sqrtMatch[1] || '');
-            const remainder = sqrtMatch[2] || '';
+        if (trimmed.startsWith('\\sqrt')) {
+            let pos = 5; // Length of '\sqrt'
+            
+            // Skip whitespace after \sqrt
+            while (pos < trimmed.length && /\s/.test(trimmed[pos])) {
+                pos++;
+            }
+            
+            if (pos >= trimmed.length || trimmed[pos] !== '{') {
+                return createPlaceholder(latex);
+            }
+            
+            const radicandResult = extractBracedContent(trimmed, pos);
+            if (!radicandResult) {
+                return createPlaceholder(latex);
+            }
+            // Parse radicand content (may contain nested commands or simple values)
+            const radicandContent = radicandResult.content || '';
+            const radicand = radicandContent ? parseExpression(radicandContent) : createPlaceholder('radicand');
+            const remainder = trimmed.substring(radicandResult.endPos);
             
             const rootNode = new ASTNode(NodeTypes.ROOT, 'sqrt', [radicand]);
             
-            if (remainder) {
+            if (remainder.trim()) {
                 const remainderNode = parseExpression(remainder);
                 return new ASTNode(NodeTypes.EXPRESSION, '+', [rootNode, remainderNode]);
             }
@@ -270,18 +380,9 @@
             return new ASTNode(NodeTypes.SUM, 'sum', children);
         }
 
-        // Handle simple operators: +, -, *, /
-        const operatorMatch = latex.match(/^(.+?)\s*([+\-*/=<>≤≥≈≠])\s*(.+)$/);
-        if (operatorMatch) {
-            const left = parseExpression(operatorMatch[1]);
-            const operator = operatorMatch[2];
-            const right = parseExpression(operatorMatch[3]);
-            
-            return new ASTNode(NodeTypes.EXPRESSION, operator, [left, right]);
-        }
-
-        // Handle simple variables and numbers
-        const simpleMatch = latex.match(/^([a-zA-Zα-ωΑ-Ω]+|\d+\.?\d*)(.*)$/);
+        // Handle simple variables and numbers FIRST (before operators)
+        // This ensures that simple values like "1", "2", "x" are parsed correctly
+        const simpleMatch = trimmed.match(/^([a-zA-Zα-ωΑ-Ω]+|\d+\.?\d*)(.*)$/);
         if (simpleMatch) {
             const value = simpleMatch[1];
             const remainder = simpleMatch[2] || '';
@@ -290,11 +391,22 @@
             const nodeType = /^\d+\.?\d*$/.test(value) ? NodeTypes.NUMBER : NodeTypes.VARIABLE;
             const node = new ASTNode(nodeType, value);
             
-            if (remainder) {
+            if (remainder.trim()) {
                 const remainderNode = parseExpression(remainder);
                 return new ASTNode(NodeTypes.EXPRESSION, '+', [node, remainderNode]);
             }
             return node;
+        }
+
+        // Handle simple operators: +, -, *, /
+        // Check this AFTER simple values to avoid greedy matching
+        const operatorMatch = trimmed.match(/^(.+?)\s*([+\-*/=<>≤≥≈≠])\s*(.+)$/);
+        if (operatorMatch) {
+            const left = parseExpression(operatorMatch[1]);
+            const operator = operatorMatch[2];
+            const right = parseExpression(operatorMatch[3]);
+            
+            return new ASTNode(NodeTypes.EXPRESSION, operator, [left, right]);
         }
 
         // Default: create placeholder
