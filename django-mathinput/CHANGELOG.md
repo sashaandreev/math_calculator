@@ -5,7 +5,7 @@ All notable changes to django-mathinput will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0rc1] - 2025-01-XX
+## [1.0.0rc1] - 2025-12-07
 
 ### Release Candidate
 This is the first release candidate for django-mathinput 1.0.0. This release includes all planned features and has passed comprehensive testing.
@@ -28,7 +28,7 @@ None at this time. Please report any issues found during testing.
 
 ---
 
-## [1.0.0] - 2025-01-XX
+## [1.0.0] - 2025-12-07
 
 ### Added
 - Initial release of django-mathinput

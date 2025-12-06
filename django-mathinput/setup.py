@@ -10,7 +10,7 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8') if
 
 setup(
     name="django-mathinput",
-    version="1.0.0rc1",
+    version="1.0.0",
     author="MathInput Contributors",
     author_email="mathinput@example.com",
     description="CKEditor-style math formula editor for Django templates",
@@ -27,7 +27,7 @@ setup(
     zip_safe=False,
     license="MIT",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Topic :: Software Development :: Libraries :: Python Modules",
