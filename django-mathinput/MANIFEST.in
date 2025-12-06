@@ -1,9 +1,9 @@
 include README.md
 include LICENSE
+include CHANGELOG.md
 include pyproject.toml
 recursive-include mathinput/templates *
 recursive-include mathinput/static *
-recursive-include tests *
 global-exclude *.pyc
 global-exclude __pycache__
 global-exclude *.py[co]
@@ -11,4 +11,8 @@ global-exclude .DS_Store
 global-exclude *.swp
 global-exclude *.swo
 global-exclude *~
+global-exclude .git*
+global-exclude *.egg-info
+global-exclude dist
+global-exclude build
 

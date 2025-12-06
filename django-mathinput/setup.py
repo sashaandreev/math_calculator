@@ -10,22 +10,29 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8') if
 
 setup(
     name="django-mathinput",
-    version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    version="1.0.0",
+    author="MathInput Contributors",
+    author_email="mathinput@example.com",
     description="CKEditor-style math formula editor for Django templates",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/yourusername/django-mathinput",
-    packages=find_packages(),
+    project_urls={
+        "Bug Tracker": "https://github.com/yourusername/django-mathinput/issues",
+        "Documentation": "https://github.com/yourusername/django-mathinput/blob/main/README.md",
+        "Source Code": "https://github.com/yourusername/django-mathinput",
+    },
+    packages=find_packages(exclude=["tests", "tests.*"]),
     include_package_data=True,
     zip_safe=False,
+    license="MIT",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
+        "Intended Audience :: Education",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Education",
-        "License :: OSI Approved :: MIT License",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -37,6 +44,7 @@ setup(
         "Framework :: Django :: 4.0",
         "Framework :: Django :: 4.1",
         "Framework :: Django :: 4.2",
+        "Operating System :: OS Independent",
     ],
     python_requires=">=3.8",
     install_requires=[
@@ -52,5 +60,6 @@ setup(
             "isort>=5.12.0",
         ],
     },
+    keywords="django math formula editor latex widget ckeditor mathematics",
 )
 
