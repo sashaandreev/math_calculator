@@ -135,6 +135,24 @@ class MathInputValidator:
         
         # 6. Sanitize and return
         return sanitize_latex(latex_string)
+    
+    def __call__(self, value):
+        """
+        Make validator callable for Django form validation.
+        
+        Django validators must be callable. This method allows
+        MathInputValidator to be used directly in form field validators.
+        
+        Args:
+            value: Input LaTeX string to validate
+        
+        Returns:
+            Sanitized LaTeX string
+        
+        Raises:
+            ValidationError: If validation fails
+        """
+        return self.validate(value)
 
 
 def count_nesting(latex_string: str) -> int:
