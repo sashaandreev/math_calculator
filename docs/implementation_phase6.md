@@ -80,7 +80,7 @@ Phase 6 prepares the package for PyPI release: package preparation, release cand
 
 ---
 
-### Task 25: Release Candidate
+### ✅Task 25: Release Candidate
 **Owner:** Lead Dev  
 **Duration:** 3 days  
 **Dependencies:** Task 24
